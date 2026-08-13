@@ -44,7 +44,7 @@ export function CartPage() {
                 <Link href={`/products/${line.product.slug}`}><h3>{line.product.name}</h3></Link>
                 {line.selectedSize && <p>Size: <strong>{line.selectedSize}</strong></p>}
                 <p>{line.product.colour}</p>
-                {getStock(line.product) < line.quantity && <p className="cart-stock-alert">This quantity is no longer available. Remove it or try checkout to see the Catalogue Agent stop the order.</p>}
+                {getStock(line.product) < line.quantity && <p className="cart-stock-alert">This quantity is no longer available. Remove it or choose another item before checkout.</p>}
                 <div className="quantity-row">
                   <button aria-label={`Decrease ${line.product.name} quantity`} onClick={() => updateQuantity(line.product.id, line.quantity - 1, line.selectedSize)} type="button"><Minus size={15} /></button>
                   <span>{line.quantity}</span>
@@ -65,7 +65,7 @@ export function CartPage() {
           </dl>
           {deliveryFee > 0 && <p className="summary-hint">Add {formatInr(999 - subtotal)} more for free delivery.</p>}
           <Link className="button button-primary checkout-button" href="/checkout">{hasUnavailable ? "Review availability at checkout" : "Proceed to checkout"}</Link>
-          <p className="safe-note"><ShieldMark /> Simulated payment—no money is charged.</p>
+          <p className="safe-note"><ShieldMark /> Simulated payment. No money is charged.</p>
         </aside>
       </div>
     </section>

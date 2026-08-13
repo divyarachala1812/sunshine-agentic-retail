@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="colour-row"><span>Colour</span><strong>{product.colour}</strong></div>
           <ProductActions product={product} />
           <div className="service-grid">
-            <div><Truck size={21} /><span><strong>{product.deliveryDays}–{product.deliveryDays + 2} days</strong>Estimated delivery</span></div>
+            <div><Truck size={21} /><span><strong>{product.deliveryDays} to {product.deliveryDays + 2} days</strong>Estimated delivery</span></div>
             <div><RotateCcw size={21} /><span><strong>7-day returns</strong>Unused items only</span></div>
             <div><ShieldCheck size={21} /><span><strong>Secure demo</strong>No real charge</span></div>
           </div>

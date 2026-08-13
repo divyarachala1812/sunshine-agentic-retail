@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeIndianRupee, Bot, Truck } from "lucide-react";
+import { ArrowRight, BadgeIndianRupee, MessageCircle, Truck } from "lucide-react";
 import { CategoryArtwork } from "@/components/category-artwork";
 import { ProductCard } from "@/components/product-card";
 import { categories, featuredProducts, products } from "@/data/products";
@@ -42,9 +42,9 @@ export default async function Home({ searchParams }: HomeProps) {
               <Link className="button button-primary" href="/?category=women#catalogue">
                 Shop fashion <ArrowRight size={18} />
               </Link>
-              <Link className="button button-secondary" href="/agents">
-                See how orders work
-              </Link>
+              <button className="button button-secondary" data-open-assistant type="button">
+                Ask Divya for help
+              </button>
             </div>
             <div className="hero-notes">
               <span><Truck size={17} /> Free delivery over ₹999</span>
@@ -132,20 +132,18 @@ export default async function Home({ searchParams }: HomeProps) {
       </section>
 
       {!isFiltered && (
-        <section className="agent-band">
-          <div className="shell agent-band-inner">
-            <div className="agent-band-icon"><Bot size={28} /></div>
+        <section className="support-band">
+          <div className="shell support-band-inner">
+            <div className="support-band-icon"><MessageCircle size={28} /></div>
             <div>
-              <span className="eyebrow">What makes this project different</span>
-              <h2>Five focused agents take every order from stock check to customer update.</h2>
+              <span className="eyebrow">Personal shopping support</span>
+              <h2>Tell Divya what you need in your own words.</h2>
               <p>
-                Catalogue, risk, payment, fulfilment and notification agents pass a
-                structured result forward—or stop safely when a decision fails.
+                Ask for recommendations by style, size and budget, add a product from the
+                conversation, review your cart, or track an order by number.
               </p>
             </div>
-            <Link className="button button-light" href="/agents">
-              Explore the workflow <ArrowRight size={18} />
-            </Link>
+            <button className="button button-light" data-open-assistant type="button">Chat with Divya <ArrowRight size={18} /></button>
           </div>
         </section>
       )}

@@ -34,20 +34,16 @@ export function OrderResult({ orderId }: { orderId: string }) {
         </div>
       </div>
 
-      <div className="shell order-content">
-        <section className="trace-panel">
+      <div className="shell order-content customer-order-content">
+        <section className="order-progress-panel">
           <div className="section-heading">
-            <div><span className="eyebrow">Java agent orchestration</span><h2>What happened behind the order</h2><p>Five bounded agents validate inventory, risk, payment, delivery and the customer update.</p></div>
+            <div><span className="eyebrow">Order progress</span><h2>{confirmed ? "Your order is being prepared" : "We stopped the order safely"}</h2><p>{confirmed ? "We confirmed your items, payment and delivery details." : "No shipment was created. Review the explanation below before trying again."}</p></div>
           </div>
-          <ol className="agent-trace">
-            {order.trace.map((step, index) => (
-              <li className={`trace-step trace-${step.status}`} key={step.agent}>
-                <span className="trace-index">{step.status === "completed" ? <Check size={18} /> : step.status === "failed" ? <X size={18} /> : index + 1}</span>
-                <div><strong>{step.agent}</strong><p>{step.message}</p></div>
-                <small>{step.durationMs ? `${step.durationMs} ms` : "Not run"}</small>
-              </li>
-            ))}
-          </ol>
+          <div className="customer-progress">
+            <div className={order.status === "OUT_OF_STOCK" ? "progress-problem" : "progress-complete"}><span>{order.status === "OUT_OF_STOCK" ? <X size={18} /> : <Check size={18} />}</span><div><strong>Items checked</strong><p>{order.status === "OUT_OF_STOCK" ? "One item was no longer available." : "Your selected items were available."}</p></div></div>
+            <div className={order.status === "PAYMENT_FAILED" ? "progress-problem" : order.status === "CONFIRMED" ? "progress-complete" : "progress-muted"}><span>{order.status === "PAYMENT_FAILED" ? <X size={18} /> : order.status === "CONFIRMED" ? <Check size={18} /> : 2}</span><div><strong>Payment reviewed</strong><p>{order.status === "PAYMENT_FAILED" ? "The payment was declined and no money was charged." : order.status === "CONFIRMED" ? `${order.paymentMethod} was confirmed.` : "Payment was not attempted."}</p></div></div>
+            <div className={confirmed ? "progress-complete" : "progress-muted"}><span>{confirmed ? <Check size={18} /> : 3}</span><div><strong>Delivery update</strong><p>{confirmed ? order.estimatedDelivery : "No shipment was created."}</p></div></div>
+          </div>
         </section>
         <aside className="order-receipt">
           <h2>Order details</h2>
@@ -61,6 +57,7 @@ export function OrderResult({ orderId }: { orderId: string }) {
             {order.paymentReference && <div><dt>Payment reference</dt><dd>{order.paymentReference}</dd></div>}
           </dl>
           <Link className="button button-primary checkout-button" href="/profile">View recent orders</Link>
+          <button className="text-link receipt-link assistant-order-help" data-open-assistant type="button">Ask Divya about this order</button>
           {!confirmed && <Link className="text-link receipt-link" href="/checkout"><RotateCcw size={15} /> Try checkout again</Link>}
         </aside>
       </div>

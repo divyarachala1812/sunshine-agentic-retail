@@ -1,63 +1,90 @@
 # Sunshine architecture
 
-Sunshine is a student-scale polyglot retail system. It keeps the responsibilities small enough to explain in an interview while still demonstrating a complete customer journey and real service boundaries.
+## 1. Purpose
 
-## Runtime flow
+I designed Sunshine as a student scale retail system with clear boundaries between the customer interface, conversational support, order processing, recommendations and analytics.
 
-```mermaid
-flowchart LR
-    U[Customer browser] --> N[Next.js storefront]
-    N --> O[POST /api/orders]
-    N --> R[GET /api/recommendations]
-    O -->|JAVA_BACKEND_URL set| J[Spring Boot order service]
-    R -->|PYTHON_BACKEND_URL set| P[FastAPI recommendation service]
-    O -->|service unavailable| OA[TypeScript order adapter]
-    R -->|service unavailable| RA[TypeScript scoring adapter]
-    J --> C[Catalogue Agent]
-    C --> K[Risk Agent]
-    K --> Y[Payment Agent]
-    Y --> F[Fulfilment Agent]
-    F --> T[Notification Agent]
-```
+The system keeps customer actions simple. Technical workflow details remain inside the services and documentation rather than appearing in normal shopping navigation.
 
-The public Vercel deployment uses the two TypeScript adapters because Vercel Functions do not provide a Java runtime. The Java and Python services remain the canonical local service implementations and use the same request and response contracts as the hosted adapters.
+## 2. Runtime flow
 
-## Service responsibilities
+The runtime follows this sequence.
 
-| Component | Responsibility | Main evidence |
-|---|---|---|
-| Next.js frontend | Search, catalogue, product pages, cart, checkout and order trace | `src/app`, `src/components` |
-| Spring Boot backend | Order validation and five-agent orchestration | `backend-java/src/main/java` |
-| FastAPI backend | Content-based product ranking | `backend-python/app` |
-| Python analytics | Reads raw order CSV and produces retail KPIs | `backend-python/scripts/retail_kpis.py` |
-| Vercel adapters | Keep the deployed demo functional with matching contracts | `src/app/api` |
+1. A customer opens the Next.js storefront.
+2. The storefront sends support requests to `POST /api/chat`.
+3. Ollama can select a supported action, and Sunshine executes it with verified commerce data.
+4. The storefront sends order requests to `POST /api/orders`.
+5. The order route uses Spring Boot when its service URL is configured and otherwise uses the compatible TypeScript adapter.
+6. The storefront sends recommendation requests to `GET /api/recommendations`.
+7. The recommendation route uses FastAPI when its service URL is configured and otherwise uses the compatible TypeScript adapter.
 
-## Agent rules
+## 3. Component responsibilities
 
-1. The Catalogue Agent runs first. If stock is unavailable, payment and fulfilment are skipped.
-2. The Risk Agent applies deterministic address, order-value and payment rules after a reservation.
-3. The Payment Agent runs only after the preceding checks. If authorisation fails, reserved stock is released and fulfilment is skipped.
-4. The Fulfilment Agent returns an estimated delivery date only for eligible orders.
-5. The Notification Agent records an order-history update for success, payment failure or stock failure.
-6. Every step returns a trace item containing its name, status, explanation and demonstration duration.
+1. The Next.js storefront provides the product catalogue, cart, checkout, account menu, profile and chat interface. The implementation is in `src/app` and `src/components`.
+2. The customer support route validates requests, uses Ollama for intent selection and creates verified responses. The implementation is in `src/app/api/chat` and `src/lib/customer-assistant.ts`.
+3. The Spring Boot service provides typed order validation and bounded order processing. The implementation is in `backend-java/src/main/java`.
+4. The FastAPI service provides content based product ranking. The implementation is in `backend-python/app`.
+5. The pandas workflow processes raw orders and creates retail KPIs. The implementation is in `backend-python/scripts/retail_kpis.py`.
+6. The hosted adapters preserve the order and recommendation contracts on Vercel. The implementation is in `src/app/api`.
 
-These are deterministic software agents with bounded responsibilities. No large language model is used in the order path.
+## 4. Conversational support boundary
 
-## Data choices
+Divya is the customer facing assistant. The Ollama model is used only to interpret the latest customer need and select one supported action.
 
-The 50 products are a curated synthetic catalogue designed for an Indian retail demonstration. Prices, ratings and inventory are fictional. The raw KPI file contains 12 synthetic order records across Indian metro cities. Synthetic data is used so the repository contains no personal customer information or copyrighted product images.
+Supported actions:
 
-## Deployment boundary
+1. Search verified products
+2. Look up an exact order number
+3. List recent orders
+4. Explain the current cart
+5. Continue to checkout
+6. Open general help
 
-- Vercel: Next.js pages and serverless route handlers.
-- Local or container host: Spring Boot and FastAPI services.
-- `JAVA_BACKEND_URL` and `PYTHON_BACKEND_URL`: switch the Next.js routes from adapters to real services without changing browser code.
-- No database or real payment gateway: the cart, personal order history and per-browser stock simulation use versioned local storage.
-- Five seeded order examples are static and visible to every visitor; newly placed attempts remain private to that browser.
+Sunshine executes the selected action. The model does not create prices, inventory quantities, order states or delivery dates. Those values come from the current catalogue, browser cart and order history.
 
-## Deliberate limitations
+If Ollama is not configured, exceeds its limit or returns an unusable response, the built in intent logic provides the same supported customer actions.
 
-- Authentication, shared database persistence and real payment processing are excluded.
-- Stock changes are a browser-local simulation rather than shared warehouse inventory.
-- Recommendation scoring is content-based, not collaborative filtering, because no real customer history is collected.
-- Agent durations are illustrative values that make the trace easier to read; they are not performance benchmarks.
+## 5. Order processing boundary
+
+The Java service uses a deterministic multi agent workflow coordinated by `OrderOrchestrator`. Each agent owns one business responsibility and returns a typed result to the orchestrator.
+
+1. Catalogue Agent checks availability and reserves inventory.
+2. Risk Agent evaluates deterministic order rules.
+3. Payment Agent handles the selected simulated method.
+4. Fulfilment Agent calculates the delivery result.
+5. Notification Agent creates the final order history update.
+
+The agents are ordinary bounded Java components rather than language model powered agents. This provides a small, understandable orchestration example without overstating the implementation.
+
+The customer interface converts the internal trace into three understandable progress areas: items checked, payment reviewed and delivery update.
+
+## 6. Deployment
+
+Vercel hosts the Next.js application and its route handlers. Java and Python services can run locally through Docker Compose or on external container platforms.
+
+Environment variables:
+
+1. `JAVA_BACKEND_URL` sends order requests to the Spring Boot service.
+2. `PYTHON_BACKEND_URL` sends recommendation requests to the FastAPI service.
+3. `OLLAMA_API_KEY` enables Ollama Cloud language understanding on the server.
+4. `OLLAMA_MODEL` selects the configured Ollama Cloud model.
+
+The Ollama key remains server only. It is never included in a browser response or committed to the repository.
+
+## 7. State and data
+
+The product catalogue and public demonstration orders are static synthetic data. The following customer state is stored in versioned browser storage.
+
+1. Shopping cart
+2. Personal demonstration orders
+3. Per browser inventory changes
+
+This design keeps the public project safe and reproducible. It is not presented as shared warehouse inventory or production customer persistence.
+
+## 8. Limitations
+
+1. The public deployment does not contain a shared customer database.
+2. Payment and delivery operations are simulations.
+3. Ollama Cloud availability depends on the selected account plan.
+4. Content based recommendations do not learn from personal behaviour.
+5. External Java and Python deployment URLs must be configured separately when those services are hosted.

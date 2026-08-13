@@ -1,213 +1,224 @@
-# Sunshine - agent-based Indian retail
+# Sunshine
 
-Sunshine is an India-first retail portfolio project that takes a shopper from search to order confirmation and makes the backend workflow visible. It combines a responsive Next.js storefront, a Spring Boot order service, a FastAPI recommendation service and a small Python retail analytics pipeline.
+Sunshine is an Indian retail application that I built to connect product discovery, conversational shopping, cart management, checkout, order processing, delivery updates and retail analytics in one project.
 
-Built by **Divya Rachala** as a final-year data science and software portfolio project.
+The application contains a Next.js storefront, a Java Spring Boot order service, a Python FastAPI recommendation service and a small pandas analytics workflow. All catalogue, payment and order data is synthetic. No real payment is collected.
 
-**Live demo:** [sunshine-agentic-retail.vercel.app](https://sunshine-agentic-retail.vercel.app)
+Author: Divya Rachala
 
-![Sunshine storefront](docs/screenshots/01-storefront.jpg)
+Live application: [Sunshine](https://sunshine-agentic-retail.vercel.app)
 
-## Why I built this
+![Sunshine storefront](docs/screenshots/01_storefront.jpg)
 
-Many student e-commerce projects stop at a product grid. I wanted to show the full path after a customer chooses an item: cart calculations, an Indian delivery address, UPI/card/COD selection, stock checking, payment failure, delivery planning and an auditable order result.
+## 1. Project overview
 
-The project focuses on skills I can explain clearly in an interview:
+Sunshine provides a complete demonstration shopping journey for customers in India. The catalogue contains 50 products across women’s fashion, men’s fashion, footwear and bags, electronics, and home and living. Prices are displayed in Indian rupees. Delivery rules, address fields and payment choices follow the Indian retail context.
 
-- Frontend development with React, TypeScript, Next.js and responsive CSS.
-- Java backend design with Spring Boot, validation, records, services and JUnit.
-- Python backend and data work with FastAPI, pandas and pytest.
-- Multi-agent orchestration using five bounded retail agents.
-- Testing, Docker, GitHub Actions and Vercel deployment.
+### 1.1 Problem and purpose
 
-## Customer experience
+Many student commerce projects stop after product listing, cart and checkout screens. The customer support conversation, stock decision, payment result, delivery update and order history often use separate sample data, so the full journey cannot be followed or verified.
 
-- 50 products across women’s fashion, men’s fashion, footwear and bags, electronics, and home and living.
-- Search and category filters, Indian rupee prices, discounts and delivery estimates.
-- Product detail pages with size selection and content-based recommendations.
-- Persistent browser cart with quantity controls and a ₹999 free-delivery threshold.
-- Checkout with an Indian address, six-digit PIN code validation and UPI/card/COD choices.
-- Three controlled scenarios: successful order, payment declined and out of stock.
-- Profile and recent-order centre with persistent browser history and five public lifecycle examples.
-- Low-stock inventory that changes after confirmed purchases and remains unavailable on return.
-- Order number, payment reference, estimated delivery and agent-by-agent trace.
+The root cause is disconnected application state. A recommendation may not match the real catalogue, a support response may invent an order update, and a failed checkout may not explain which step stopped the order.
 
-| Product and Python recommendations | Checkout |
-|---|---|
-| ![Product page and recommendations](docs/screenshots/02-product-and-recommendations.jpg) | ![Sunshine checkout](docs/screenshots/04-checkout.jpg) |
+I built Sunshine to solve this project gap. The same catalogue, cart, inventory and order records support the storefront, Divya assistant, checkout results and recent orders. The application therefore demonstrates how an ecommerce interface can remain simple for the customer while several focused services coordinate behind it.
 
-## How the agent workflow works
+The application supports the following customer journey.
 
-The agents are deterministic backend components, not generative AI chatbots. Each has one bounded responsibility and returns a structured result to the orchestrator.
+1. Search the catalogue or select a category.
+2. Review product information, prices, ratings, sizes and delivery estimates.
+3. Ask Divya, the conversational shopping assistant, for product suggestions.
+4. Select a size and add a suggested product to the cart from the conversation.
+5. Review the cart and continue to checkout.
+6. Enter an Indian delivery address and select UPI, card or cash on delivery.
+7. Complete a simulated order result.
+8. Review recent orders and delivery updates from the profile menu.
 
-1. **Catalogue Agent** checks current browser inventory and reserves stock. An unavailable item stops the workflow before payment.
-2. **Risk Agent** applies explainable address, value and payment rules after reservation.
-3. **Payment Agent** handles UPI, card or COD eligibility. A decline releases the reservation and skips fulfilment.
-4. **Fulfilment Agent** plans delivery only after the preceding steps pass.
-5. **Notification Agent** records the correct success, payment-failure or stock update in recent orders.
+## 2. Customer experience
 
-![Five-agent workflow](docs/screenshots/03-agent-workflow.jpg)
+### 2.1 Conversational shopping
 
-The successful path returns five completed steps:
+Divya is available from the support button and the profile menu. The assistant can understand product requests, ask for missing preferences, recommend catalogue items, add a selected size to the cart and provide verified order information.
 
-![Confirmed order with Java agent trace](docs/screenshots/05-order-success.jpg)
+Example conversation:
 
-The failure path remains visible and explains why fulfilment did not run:
+```text
+Customer: I want nice sneakers.
 
-![Declined payment with skipped fulfilment](docs/screenshots/06-payment-failure.jpg)
+Divya: Tell me whether they are for women, men or unisex, whether you want casual or running shoes, and your size.
 
-## Architecture
+Customer: Women, casual, size 7.
 
-```mermaid
-flowchart LR
-    B[Browser] --> N[Next.js storefront]
-    N --> O[Order API]
-    N --> R[Recommendation API]
-    O --> J[Spring Boot orchestrator]
-    R --> P[FastAPI recommender]
-    J --> C[Catalogue Agent]
-    C --> K[Risk Agent]
-    K --> Y[Payment Agent]
-    Y --> F[Fulfilment Agent]
-    F --> T[Notification Agent]
-    O -. Vercel .-> OA[TypeScript order adapter]
-    R -. Vercel .-> RA[TypeScript scoring adapter]
+Divya: Here are the strongest available options from the Sunshine catalogue.
 ```
 
-For local development, the Next.js API routes proxy to the real Java and Python services. The public Vercel demo uses matching TypeScript adapters because Java is not an official Vercel Function runtime. This boundary is intentional and documented; the browser contract stays the same in both environments.
+The assistant uses the optional Ollama Cloud model to interpret natural language. Product prices, sizes, stock and order dates always come from Sunshine data. When Ollama is not configured or is unavailable, the built in support logic continues to provide product discovery, cart help and order lookup.
 
-See [architecture notes](docs/ARCHITECTURE.md) and [API contracts](docs/API_CONTRACTS.md) for the detailed design.
+### 2.2 Profile and orders
 
-## Profile, order history and inventory
+The profile menu contains Profile, Recent orders, Account, Chat with Divya and Help centre. The category navigation is reserved for shopping categories.
 
-The profile page is useful immediately: every visitor can inspect examples for arriving today, shipped, delivered, payment failed and out of stock. Orders placed by a visitor are saved privately in that browser and shown above the public examples.
+Every visitor can inspect public order examples for the following states.
 
-![Profile and recent order states](docs/screenshots/07-profile-and-recent-orders.jpg)
+1. Arriving today
+2. Shipment arriving
+3. Delivered
+4. Payment failed
+5. Item unavailable
 
-Confirmed orders reduce browser inventory. The featured laptop begins with one unit; after it is purchased, its product page changes to unavailable on return. Payment failures release the reservation and do not reduce stock. This is intentionally a client-side portfolio simulation, not a claim of shared warehouse inventory.
+Orders placed by a visitor are stored in that browser and appear before the public examples.
 
-![Unavailable product state](docs/screenshots/08-unavailable-product.jpg)
+![Profile and recent orders](docs/screenshots/07_profile_and_recent_orders.jpg)
 
-## Technology map
+### 2.3 Inventory behaviour
 
-| Layer | Technology | What it demonstrates |
-|---|---|---|
-| Storefront | Next.js 16, React 19, TypeScript, CSS | Server/client component boundaries, responsive UI, routing and browser state |
-| Hosted API adapters | Next.js route handlers | Validation, proxy/fallback pattern and Vercel compatibility |
-| Order backend | Java 17, Spring Boot 4 | Typed records, dependency injection, orchestration, validation and error paths |
-| Recommendation backend | Python 3.13, FastAPI | API modelling and deterministic content-based ranking |
-| Retail analytics | pandas | Raw CSV cleaning, aggregation and KPI export |
-| Quality | Vitest, JUnit, pytest, ESLint | Automated checks across all three application languages |
-| Delivery | Docker Compose, GitHub Actions, Vercel | Reproducible local stack and CI/CD |
+The catalogue contains normal, low stock and unavailable products. A confirmed purchase reduces inventory in the current browser. When the final unit is purchased, the product becomes unavailable on the next visit. A failed payment does not reduce inventory.
 
-## Python analytics result
+![Unavailable product](docs/screenshots/08_unavailable_product.jpg)
 
-The included raw order sample is intentionally small and synthetic. It proves the data workflow without claiming production volume or using personal customer data.
+## 3. Application architecture
 
-| KPI | Result |
-|---|---:|
-| Orders received | 12 |
-| Orders confirmed | 9 |
-| Confirmation rate | 75.0% |
-| Confirmed revenue | ₹37,136 |
-| Average order value | ₹4,126.22 |
-| Highest-revenue city | Delhi |
-| Highest-revenue category | Electronics |
+The runtime follows this sequence.
 
-The reproducible output is stored in [`reports/retail_kpis.json`](reports/retail_kpis.json).
+1. The customer uses the Next.js storefront in a browser.
+2. The storefront sends conversational requests to the customer support route.
+3. Ollama can interpret the request, while Sunshine retrieves verified product, cart and order information.
+4. Order requests use the Spring Boot service or the compatible hosted adapter.
+5. Recommendation requests use the FastAPI service or the compatible hosted adapter.
+6. The pandas workflow reads raw order records and produces the retail KPI report.
 
-## Run locally
+The Next.js route handlers provide stable application endpoints. When the Java and Python service URLs are configured, requests are passed to those services. The Vercel deployment can use contract compatible TypeScript adapters when the external services are not available.
 
-### Fastest option: Docker Compose
+The conversational support route follows a separate boundary. Ollama interprets customer language and chooses a supported action. Sunshine then executes that action using verified catalogue, cart and order data.
+
+More information is available in [architecture documentation](docs/ARCHITECTURE.md) and [API documentation](docs/API_CONTRACTS.md).
+
+## 4. Technology
+
+1. The storefront uses Next.js 16, React 19, TypeScript and CSS for pages, product discovery, cart, checkout, profile and the chat interface.
+2. Conversational support uses Ollama Cloud and TypeScript for natural language intent selection with verified application actions.
+3. The order service uses Java 17 and Spring Boot 4 for validation, stock decisions, payment simulation and delivery planning.
+4. The recommendation service uses Python 3.13 and FastAPI for deterministic content based product ranking.
+5. The analytics workflow uses pandas for raw order cleaning, KPI calculation and JSON output.
+6. Quality checks use Vitest, JUnit, pytest and ESLint.
+7. Delivery uses Docker Compose, GitHub Actions and Vercel.
+
+## 5. Order processing
+
+The Java order service demonstrates a student scale multi agent order workflow. Five deterministic agents have one responsibility each: catalogue, risk, payment, fulfilment and notification. An order orchestrator passes the result from one agent to the next and stops the workflow when a required step fails.
+
+These agents do not use a language model. They are focused software components that make the sequence, failure rules and service boundaries easy to test. Divya is the separate customer facing AI assistant. This distinction keeps the project description accurate.
+
+The technical workflow remains in the source code and documentation. The customer interface only shows items checked, payment reviewed and delivery update.
+
+The order service supports three demonstration results.
+
+1. A successful order confirms payment eligibility, produces a delivery estimate and records the order.
+2. A declined payment releases the reserved item, creates no shipment and keeps the cart available.
+3. An unavailable item stops processing before payment and records an inventory update.
+
+## 6. Product recommendations
+
+The FastAPI service ranks related products from the same category. The scoring method combines product rating and relative price distance.
+
+```text
+score = rating multiplied by 2, then reduced by the absolute price difference divided by the reference price
+```
+
+![Product recommendations](docs/screenshots/02_product_and_recommendations.jpg)
+
+## 7. Retail analytics
+
+The analytics workflow reads a synthetic raw order file, validates the records and creates a reproducible KPI file at `reports/retail_kpis.json`.
+
+1. Orders received: 12
+2. Orders confirmed: 9
+3. Confirmation rate: 75.0%
+4. Confirmed revenue: ₹37,136
+5. Average order value: ₹4,126.22
+6. Highest revenue city: Delhi
+7. Highest revenue category: Electronics
+
+## 8. Local setup
+
+### 8.1 Requirements
+
+1. Node.js 22 or newer
+2. Java 17
+3. Python 3.13
+4. Docker Desktop for the combined setup
+
+### 8.2 Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-Open `http://localhost:3000`. This starts the Next.js storefront, Spring Boot order service and FastAPI recommendation service together.
+Open `http://localhost:3000`.
 
-### Run each service separately
+### 8.3 Individual services
 
-Requirements: Node.js 22+, Java 17 and Python 3.13.
+Java service:
 
 ```bash
-# Terminal 1 - Java order service
 cd backend-java
 ./mvnw spring-boot:run
+```
 
-# Terminal 2 - Python recommendation service
+Python service:
+
+```bash
 cd backend-python
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
+```
 
-# Terminal 3 - storefront
+Storefront:
+
+```bash
 cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-The Java health endpoint is `http://localhost:8080/api/health`; FastAPI health is `http://localhost:8000/health` and interactive API docs are at `http://localhost:8000/docs`.
+The Ollama integration is optional. Add `OLLAMA_API_KEY` as a server environment variable to enable cloud based language understanding. The key must never use the `NEXT_PUBLIC_` prefix.
 
-## Tests
+## 9. Tests
 
 ```bash
-# TypeScript logic, lint and production build
 npm test
 npm run lint
 npm run build
 
-# Java orchestration scenarios
-cd backend-java && ./mvnw test
+cd backend-java
+./mvnw test
 
-# Python recommendation API
-cd backend-python && PYTHONPATH=. pytest -q
-
-# Regenerate retail KPIs
-cd backend-python && PYTHONPATH=. python scripts/retail_kpis.py
+cd backend-python
+PYTHONPATH=. pytest -q
 ```
 
-Current local verification:
+The automated checks cover pricing, delivery fees, conversational product discovery, order lookup, stock exhaustion, payment failure, recommendation ranking and request validation.
 
-- 7 Vitest tests passed, including stock-aware orchestration.
-- 4 JUnit tests passed, including stock exhaustion.
-- 4 pytest tests passed.
-- ESLint passed.
-- Next.js production build generated 60 pages successfully.
-- Browser QA passed for profile history, low-stock purchase, repeat-visit unavailability, successful payment and declined-payment flows.
-- Integration responses confirmed the Java order service and Python recommendation service were actually used.
+## 10. Data and limitations
 
-## Repository guide
+1. The catalogue, ratings, prices, orders and delivery updates are synthetic.
+2. The application does not process real payments.
+3. Personal orders, cart content and inventory changes use browser storage.
+4. There is no shared production customer database.
+5. Ollama usage depends on the configured account limits.
+6. The recommendation service does not use personal behavioural data.
 
-```text
-sunshine-agentic-retail/
-├── src/                    # Next.js storefront and hosted API adapters
-├── backend-java/           # Spring Boot order orchestrator and agents
-├── backend-python/         # FastAPI recommender and pandas KPI script
-├── docs/                   # Architecture, API notes, screenshots and report
-├── reports/                # Reproducible analytics output
-├── .github/workflows/      # CI for TypeScript, Java and Python
-└── docker-compose.yml      # Full local polyglot stack
-```
+## 11. Project report
 
-## Honest scope and limitations
+The detailed report is available at `output/pdf/Sunshine_Project_Report.pdf`. It contains the project requirements, architecture, application flows, API contracts, analytics results and test evidence.
 
-- All products, prices, ratings and orders are synthetic demonstrations.
-- Payments are simulations and never charge money.
-- The cart, personal order history and inventory simulation use versioned local storage; there is no shared production database.
-- Agent durations are illustrative trace values, not performance benchmarks.
-- The recommendation model is content-based because no real customer history is collected.
-- Authentication and a real gateway are sensible future improvements, but excluded to keep the project credible at final-year student scope.
+## 12. Author
 
-## Project report
+Divya Rachala
 
-The detailed PDF report in [`output/pdf/Sunshine_Project_Report.pdf`](output/pdf/Sunshine_Project_Report.pdf) covers requirements, architecture, API contracts, data decisions, KPI analysis, test evidence, screenshots, limitations and interview discussion points.
-
-## Author
-
-**Divya Rachala** · Bachelor’s student in Data Science
+Bachelor’s student in Data Science
 
 GitHub: [divyarachala1812](https://github.com/divyarachala1812)
 
-Released under the [MIT License](LICENSE).
+License: [MIT](LICENSE)

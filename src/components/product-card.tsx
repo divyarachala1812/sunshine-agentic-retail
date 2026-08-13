@@ -45,7 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
           <del>{formatInr(product.mrp)}</del>
           <span>{discountPercent(product.price, product.mrp)}% off</span>
         </div>
-        <p className="delivery-note">{product.price >= 999 ? "Free delivery" : "Delivery ₹79"} · {product.deliveryDays}–{product.deliveryDays + 2} days</p>
+        <p className="delivery-note">{product.price >= 999 ? "Free delivery" : "Delivery ₹79"} · {product.deliveryDays} to {product.deliveryDays + 2} days</p>
         <button className="add-button" disabled={stock === 0} type="button" onClick={handleAdd}>
           <ShoppingBag size={17} /> {stock === 0 ? "Unavailable" : added ? "Added to cart" : "Add to cart"}
         </button>

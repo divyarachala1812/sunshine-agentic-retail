@@ -6,12 +6,12 @@ export function Footer() {
       <div className="shell footer-inner">
         <div>
           <span className="footer-brand">☀ sunshine</span>
-          <p>An India-first retail and multi-agent portfolio project by Divya Rachala.</p>
+          <p>An Indian shopping and conversational support project by Divya Rachala.</p>
         </div>
         <div className="footer-links">
           <Link href="/">Shop</Link>
-          <Link href="/agents">How agents work</Link>
-          <Link href="/profile">Recent orders</Link>
+          <Link href="/help">Help centre</Link>
+          <Link href="/account">Account</Link>
           <Link href="/cart">Cart</Link>
         </div>
       </div>

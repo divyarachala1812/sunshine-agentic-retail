@@ -44,7 +44,7 @@ const women = makeProducts("women", [
 ]);
 
 const men = makeProducts("men", [
-  { name: "Arjun Oxford Shirt", brand: "Northlane", category: "men", price: 1099, mrp: 1999, rating: 4.4, reviews: 1351, description: "Regular-fit cotton Oxford shirt that works from lectures to interviews.", colour: "Sky blue", sizes: ["S", "M", "L", "XL"], badge: "Bestseller", deliveryDays: 2, stock: 32 },
+  { name: "Arjun Oxford Shirt", brand: "Northlane", category: "men", price: 1099, mrp: 1999, rating: 4.4, reviews: 1351, description: "Regular fit cotton Oxford shirt that works from lectures to workdays.", colour: "Sky blue", sizes: ["S", "M", "L", "XL"], badge: "Bestseller", deliveryDays: 2, stock: 32 },
   { name: "Kabir Linen Kurta", brand: "Aangan", category: "men", price: 1299, mrp: 2399, rating: 4.5, reviews: 880, description: "Breathable linen-blend kurta with a neat band collar.", colour: "Sand", sizes: ["S", "M", "L", "XL", "XXL"], deliveryDays: 3, stock: 19 },
   { name: "Rohan Tapered Jeans", brand: "Drift", category: "men", price: 1499, mrp: 2699, rating: 4.3, reviews: 966, description: "Stretch denim with a comfortable mid-rise and tapered leg.", colour: "Dark blue", sizes: ["30", "32", "34", "36", "38"], deliveryDays: 3, stock: 22 },
   { name: "Dev Textured Polo", brand: "Northlane", category: "men", price: 799, mrp: 1499, rating: 4.2, reviews: 714, description: "Soft textured polo T-shirt with a tailored everyday shape.", colour: "Forest", sizes: ["S", "M", "L", "XL"], deliveryDays: 2, stock: 27 },

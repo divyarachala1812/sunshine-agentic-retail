@@ -30,7 +30,7 @@ export function ProductActions({ product }: { product: Product }) {
   return (
     <div className="product-actions">
       <p className={`stock-message ${stock === 0 ? "stock-out" : stock <= 3 ? "stock-low" : ""}`}>
-        {stock === 0 ? "Currently unavailable — this item cannot be added" : stock <= 3 ? `Only ${stock} left — order soon` : `${stock} units available`}
+        {stock === 0 ? "Currently unavailable. This item cannot be added" : stock <= 3 ? `Only ${stock} left. Order soon` : `${stock} units available`}
       </p>
       {product.sizes && (
         <fieldset className="size-picker">

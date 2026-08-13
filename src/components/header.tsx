@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Search, ShoppingBag, UserRound } from "lucide-react";
+import { MapPin, Search, ShoppingBag } from "lucide-react";
+import { AccountMenu } from "@/components/account-menu";
 import { useCart } from "@/components/cart-provider";
 import { categories } from "@/data/products";
 
@@ -32,7 +33,7 @@ export function Header() {
           <button type="submit">Search</button>
         </form>
         <nav className="header-actions" aria-label="Account and cart">
-          <Link className="account-link" href="/profile"><UserRound size={21} /><span>Profile & orders</span></Link>
+          <AccountMenu />
           <Link className="cart-link" href="/cart" aria-label={`Cart with ${itemCount} items`}>
             <ShoppingBag size={22} />
             <span>Cart</span>
@@ -47,8 +48,6 @@ export function Header() {
             {category.label}
           </Link>
         ))}
-        <Link className="agent-nav-link" href="/agents">Agent workflow</Link>
-        <Link href="/profile">Recent orders</Link>
       </nav>
     </header>
   );

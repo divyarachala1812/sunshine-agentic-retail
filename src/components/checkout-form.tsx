@@ -90,7 +90,7 @@ export function CheckoutForm() {
       <div className="page-heading checkout-heading">
         <span className="eyebrow">Secure demo checkout</span>
         <h1>Where should we send it?</h1>
-        <p>Use sample information only. This portfolio demo does not save your details.</p>
+        <p>Use sample information only. Sunshine does not save your details.</p>
       </div>
       <form className="checkout-layout" onSubmit={submitOrder}>
         <div className="checkout-forms">
@@ -115,7 +115,7 @@ export function CheckoutForm() {
           </section>
 
           <section className="form-card scenario-card">
-            <div className="form-card-heading"><span>3</span><div><h2>Test an agent scenario</h2><p>Choose a path to see how the orchestrator responds.</p></div></div>
+            <div className="form-card-heading"><span>3</span><div><h2>Demo checkout result</h2><p>Choose a result to preview customer-facing success and failure states.</p></div></div>
             <label>Demo result
               <select value={scenario} onChange={(event) => setScenario(event.target.value as OrderScenario)}>
                 <option value="SUCCESS">Successful order</option>
@@ -132,7 +132,7 @@ export function CheckoutForm() {
           <div className="checkout-items">
             {lines.map((line) => (
               <div key={`${line.product.id}-${line.selectedSize ?? "default"}`}>
-                <span>{line.quantity}× {line.product.name}</span>
+                <span>{line.quantity} item of {line.product.name}</span>
                 <strong>{formatInr(line.product.price * line.quantity)}</strong>
               </div>
             ))}
@@ -143,7 +143,7 @@ export function CheckoutForm() {
             <div className="summary-total"><dt>Payable</dt><dd>{formatInr(subtotal + deliveryFee)}</dd></div>
           </dl>
           <button className="button button-primary checkout-button" disabled={isSubmitting} type="submit">
-            <PackageCheck size={19} /> {isSubmitting ? "Agents are processing…" : "Place demo order"}
+            <PackageCheck size={19} /> {isSubmitting ? "Processing your order…" : "Place demo order"}
           </button>
           <p className="safe-note"><span>✓</span> By placing this demo order, no payment is made.</p>
         </aside>

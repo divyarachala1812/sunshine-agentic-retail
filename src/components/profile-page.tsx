@@ -26,7 +26,7 @@ export function ProfilePage() {
   const personalCount = orders.filter((order) => !order.orderId.startsWith("SUN-DEMO")).length;
 
   return (
-    <section className="shell profile-page">
+    <section className="shell profile-page" id="profile">
       <div className="profile-hero">
         <span className="profile-avatar"><UserRound size={34} /></span>
         <div><span className="eyebrow">Sunshine profile</span><h1>Hi, Divya.</h1><p>A public demonstration profile with recent order states. Orders you place are stored only in this browser.</p></div>
@@ -39,7 +39,7 @@ export function ProfilePage() {
           {personalCount > 0 && <button className="reset-button" onClick={resetDemoActivity} type="button"><RotateCcw size={15} /> Reset my demo activity</button>}
         </aside>
 
-        <div className="orders-panel">
+        <div className="orders-panel" id="orders">
           <div className="orders-heading"><div><span className="eyebrow">Order centre</span><h2>Recent orders</h2></div><span>{personalCount} placed in this browser</span></div>
           <div className="orders-list">
             {orders.map((order) => {
@@ -52,11 +52,11 @@ export function ProfilePage() {
                     <span className="order-total">{formatInr(order.total)}</span>
                   </div>
                   <div className="order-products">
-                    {order.items.map((item) => <Link href={`/products/${item.slug}`} key={`${order.orderId}-${item.productId}`}>{item.quantity}× {item.name}{item.selectedSize ? ` · Size ${item.selectedSize}` : ""}</Link>)}
+                    {order.items.map((item) => <Link href={`/products/${item.slug}`} key={`${order.orderId}-${item.productId}`}>{item.quantity} item of {item.name}{item.selectedSize ? ` · Size ${item.selectedSize}` : ""}</Link>)}
                   </div>
                   <div className="order-card-foot">
                     <span>{new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(order.createdAt))} · {order.paymentMethod}</span>
-                    <Link className="text-link" href={`/order/${order.orderId}`}>View order & agent trace</Link>
+                    <Link className="text-link" href={`/order/${order.orderId}`}>View order details</Link>
                   </div>
                 </article>
               );

@@ -1,8 +1,53 @@
-# API contracts
+# Sunshine API contracts
 
-## Create an order
+## 1. Customer support
 
-`POST /api/orders`
+Endpoint: `POST /api/chat`
+
+The browser sends a short conversation together with verified browser state.
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Women casual sneakers size 7"
+    }
+  ],
+  "orders": [],
+  "cart": [],
+  "inventory": [
+    {
+      "productId": "FO-001",
+      "availableStock": 26
+    }
+  ]
+}
+```
+
+The response contains customer text, verified products, optional action links and optional quick replies.
+
+```json
+{
+  "message": "I found three casual options from the Sunshine catalogue.",
+  "products": [],
+  "suggestedSize": "7",
+  "quickReplies": [
+    "Show me another style",
+    "What is in my cart?"
+  ],
+  "actions": [],
+  "source": "ollama"
+}
+```
+
+The `source` value is `ollama` when the cloud model selected the supported action. It is `sunshine` when the built in intent logic handled the request.
+
+The endpoint validates message length and collection limits. The Ollama credential remains on the server.
+
+## 2. Create order
+
+Endpoint: `POST /api/orders`
 
 ```json
 {
@@ -14,7 +59,7 @@
       "price": 1499,
       "quantity": 1,
       "selectedSize": "S",
-      "availableStock": 1
+      "availableStock": 18
     }
   ],
   "customer": {
@@ -29,9 +74,19 @@
 }
 ```
 
-Supported scenarios are `SUCCESS`, `PAYMENT_FAILED` and `OUT_OF_STOCK`. Supported payment methods are `UPI`, `CARD` and `COD`.
+Supported payment methods:
 
-The response has one of three statuses and always includes the agent trace:
+1. `UPI`
+2. `CARD`
+3. `COD`
+
+Supported demonstration scenarios:
+
+1. `SUCCESS`
+2. `PAYMENT_FAILED`
+3. `OUT_OF_STOCK`
+
+Example response:
 
 ```json
 {
@@ -45,47 +100,35 @@ The response has one of three statuses and always includes the agent trace:
   "deliveryStatus": "PROCESSING",
   "destinationCity": "Hyderabad",
   "createdAt": "2026-08-13T17:00:00Z",
-  "items": [
-    {
-      "productId": "WO-001",
-      "slug": "anvi-aarohi-floral-kurta-set",
-      "name": "Aarohi Floral Kurta Set",
-      "price": 1499,
-      "quantity": 1,
-      "selectedSize": "S",
-      "availableStock": 1
-    }
-  ],
+  "items": [],
   "message": "Your order is confirmed and is being prepared for dispatch.",
-  "trace": [
-    {
-      "agent": "Catalogue Agent",
-      "status": "completed",
-      "message": "1 item type checked and reserved.",
-      "durationMs": 126
-    },
-    {
-      "agent": "Risk Agent",
-      "status": "completed",
-      "message": "Address, order value and payment rules passed the demo risk check.",
-      "durationMs": 93
-    }
-  ]
+  "trace": []
 }
 ```
 
-The five ordered trace roles are Catalogue, Risk, Payment, Fulfilment and Notification. Failure paths keep all roles visible as completed, failed or skipped so the client can explain why processing stopped.
+The internal `trace` records bounded service steps. The customer order page converts this data into a simple progress view.
 
-When the Spring Boot service responds, the Next.js route adds `x-sunshine-service: java`. Otherwise, it adds `x-sunshine-service: vercel-adapter`.
+When Spring Boot handles the request, the response contains `x-sunshine-service: java`. The hosted adapter uses `x-sunshine-service: vercel-adapter`.
 
-## Product recommendations
+## 3. Product recommendations
 
-The browser calls `GET /api/recommendations?slug=<product-slug>`. The Next.js route passes a compact product set to FastAPI at `POST /recommendations` when `PYTHON_BACKEND_URL` is configured.
+Endpoint: `GET /api/recommendations?slug=<product slug>`
 
-The scoring formula prioritises same-category products, higher ratings and prices close to the reference item:
+The Next.js route passes a compact same category product set to FastAPI when `PYTHON_BACKEND_URL` is configured.
+
+Scoring method:
 
 ```text
-score = rating × 2 - absolute price difference / reference price
+score = rating multiplied by 2, then reduced by the absolute price difference divided by the reference price
 ```
 
-The browser response contains complete product objects plus a `source` field of `python` or `fallback`.
+Response:
+
+```json
+{
+  "products": [],
+  "source": "python"
+}
+```
+
+The `source` value is `python` when FastAPI produced the ranking. It is `fallback` when the TypeScript adapter produced the same deterministic result.
