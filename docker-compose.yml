@@ -1,0 +1,23 @@
+services:
+  java-order-service:
+    build: ./backend-java
+    ports:
+      - "8080:8080"
+
+  python-recommendation-service:
+    build: ./backend-python
+    ports:
+      - "8000:8000"
+
+  storefront:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      JAVA_BACKEND_URL: http://java-order-service:8080
+      PYTHON_BACKEND_URL: http://python-recommendation-service:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - java-order-service
+      - python-recommendation-service

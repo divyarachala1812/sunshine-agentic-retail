@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.vercel
+backend-python/.venv
+backend-java/target
+output
+tmp

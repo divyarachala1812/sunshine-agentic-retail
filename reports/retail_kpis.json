@@ -1,0 +1,9 @@
+{
+  "orders_received":12,
+  "orders_confirmed":9,
+  "confirmation_rate_pct":75.0,
+  "confirmed_revenue_inr":37136,
+  "average_order_value_inr":4126.22,
+  "top_city":"Delhi",
+  "top_category":"electronics"
+}

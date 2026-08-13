@@ -1,0 +1,1 @@
+"""Sunshine recommendation service."""
