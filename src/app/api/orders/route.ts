@@ -5,7 +5,20 @@ function isValidRequest(value: unknown): value is OrderRequest {
   if (!value || typeof value !== "object") return false;
   const request = value as Partial<OrderRequest>;
   return Boolean(
-    request.items?.length &&
+    Array.isArray(request.items) &&
+      request.items.length &&
+      request.items.every(
+        (item) =>
+          item.productId &&
+          item.slug &&
+          item.name &&
+          Number.isFinite(item.price) &&
+          item.price > 0 &&
+          Number.isInteger(item.quantity) &&
+          item.quantity > 0 &&
+          Number.isInteger(item.availableStock) &&
+          item.availableStock >= 0,
+      ) &&
       request.customer?.name &&
       /^[1-9][0-9]{5}$/.test(request.customer.pincode ?? "") &&
       ["UPI", "CARD", "COD"].includes(request.paymentMethod ?? "") &&

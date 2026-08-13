@@ -35,9 +35,12 @@ export type OrderScenario = "SUCCESS" | "PAYMENT_FAILED" | "OUT_OF_STOCK";
 export type OrderRequest = {
   items: Array<{
     productId: string;
+    slug: string;
     name: string;
     price: number;
     quantity: number;
+    selectedSize?: string;
+    availableStock: number;
   }>;
   customer: {
     name: string;
@@ -51,11 +54,23 @@ export type OrderRequest = {
 };
 
 export type AgentStep = {
-  agent: "Catalogue Agent" | "Payment Agent" | "Fulfilment Agent";
+  agent:
+    | "Catalogue Agent"
+    | "Risk Agent"
+    | "Payment Agent"
+    | "Fulfilment Agent"
+    | "Notification Agent";
   status: "completed" | "failed" | "skipped";
   message: string;
   durationMs: number;
 };
+
+export type DeliveryStatus =
+  | "PROCESSING"
+  | "SHIPPED"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "NOT_CREATED";
 
 export type OrderResponse = {
   orderId: string;
@@ -64,6 +79,11 @@ export type OrderResponse = {
   deliveryFee: number;
   estimatedDelivery: string | null;
   paymentReference: string | null;
+  paymentMethod: OrderRequest["paymentMethod"];
+  deliveryStatus: DeliveryStatus;
+  destinationCity: string;
+  createdAt: string;
+  items: OrderRequest["items"];
   message: string;
   trace: AgentStep[];
 };

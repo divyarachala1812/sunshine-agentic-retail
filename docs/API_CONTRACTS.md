@@ -9,9 +9,12 @@
   "items": [
     {
       "productId": "WO-001",
+      "slug": "anvi-aarohi-floral-kurta-set",
       "name": "Aarohi Floral Kurta Set",
       "price": 1499,
-      "quantity": 1
+      "quantity": 1,
+      "selectedSize": "S",
+      "availableStock": 1
     }
   ],
   "customer": {
@@ -38,6 +41,21 @@ The response has one of three statuses and always includes the agent trace:
   "deliveryFee": 0,
   "estimatedDelivery": "Mon, 17 Aug",
   "paymentReference": "UPI-41633158744",
+  "paymentMethod": "UPI",
+  "deliveryStatus": "PROCESSING",
+  "destinationCity": "Hyderabad",
+  "createdAt": "2026-08-13T17:00:00Z",
+  "items": [
+    {
+      "productId": "WO-001",
+      "slug": "anvi-aarohi-floral-kurta-set",
+      "name": "Aarohi Floral Kurta Set",
+      "price": 1499,
+      "quantity": 1,
+      "selectedSize": "S",
+      "availableStock": 1
+    }
+  ],
   "message": "Your order is confirmed and is being prepared for dispatch.",
   "trace": [
     {
@@ -45,10 +63,18 @@ The response has one of three statuses and always includes the agent trace:
       "status": "completed",
       "message": "1 item type checked and reserved.",
       "durationMs": 126
+    },
+    {
+      "agent": "Risk Agent",
+      "status": "completed",
+      "message": "Address, order value and payment rules passed the demo risk check.",
+      "durationMs": 93
     }
   ]
 }
 ```
+
+The five ordered trace roles are Catalogue, Risk, Payment, Fulfilment and Notification. Failure paths keep all roles visible as completed, failed or skipped so the client can explain why processing stopped.
 
 When the Spring Boot service responds, the Next.js route adds `x-sunshine-service: java`. Otherwise, it adds `x-sunshine-service: vercel-adapter`.
 

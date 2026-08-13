@@ -11,6 +11,7 @@ export function Footer() {
         <div className="footer-links">
           <Link href="/">Shop</Link>
           <Link href="/agents">How agents work</Link>
+          <Link href="/profile">Recent orders</Link>
           <Link href="/cart">Cart</Link>
         </div>
       </div>

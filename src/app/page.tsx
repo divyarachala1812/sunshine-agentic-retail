@@ -137,10 +137,10 @@ export default async function Home({ searchParams }: HomeProps) {
             <div className="agent-band-icon"><Bot size={28} /></div>
             <div>
               <span className="eyebrow">What makes this project different</span>
-              <h2>Three focused agents take every order from cart to dispatch.</h2>
+              <h2>Five focused agents take every order from stock check to customer update.</h2>
               <p>
-                The catalogue agent reserves stock, the payment agent handles the
-                selected method, and the fulfilment agent plans delivery.
+                Catalogue, risk, payment, fulfilment and notification agents pass a
+                structured result forward—or stop safely when a decision fails.
               </p>
             </div>
             <Link className="button button-light" href="/agents">

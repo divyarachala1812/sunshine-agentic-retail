@@ -26,24 +26,35 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
   const total = subtotal + deliveryFee;
   const trace: AgentStep[] = [];
   const orderId = makeReference("SUN");
+  const baseOrder = {
+    orderId,
+    total,
+    deliveryFee,
+    paymentMethod: request.paymentMethod,
+    destinationCity: request.customer.city,
+    createdAt: new Date().toISOString(),
+    items: request.items,
+  };
 
-  if (request.scenario === "OUT_OF_STOCK") {
+  const unavailableItem = request.items.find((item) => item.availableStock < item.quantity);
+  if (request.scenario === "OUT_OF_STOCK" || unavailableItem) {
     trace.push({
       agent: "Catalogue Agent",
       status: "failed",
-      message: "One cart item became unavailable before reservation.",
+      message: `${unavailableItem?.name ?? request.items[0]?.name ?? "A cart item"} became unavailable before reservation.`,
       durationMs: 118,
     });
+    trace.push({ agent: "Risk Agent", status: "skipped", message: "Order risk rules were not required.", durationMs: 0 });
     trace.push({ agent: "Payment Agent", status: "skipped", message: "Payment was not attempted.", durationMs: 0 });
     trace.push({ agent: "Fulfilment Agent", status: "skipped", message: "Delivery planning was not required.", durationMs: 0 });
+    trace.push({ agent: "Notification Agent", status: "completed", message: "A stock alert was added to the customer order history.", durationMs: 72 });
 
     return {
-      orderId,
+      ...baseOrder,
       status: "OUT_OF_STOCK",
-      total,
-      deliveryFee,
       estimatedDelivery: null,
       paymentReference: null,
+      deliveryStatus: "NOT_CREATED",
       message: "The order was stopped before payment because an item is out of stock.",
       trace,
     };
@@ -54,6 +65,12 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
     status: "completed",
     message: `${request.items.length} item type${request.items.length === 1 ? "" : "s"} checked and reserved.`,
     durationMs: 126,
+  });
+  trace.push({
+    agent: "Risk Agent",
+    status: "completed",
+    message: "Address, order value and payment rules passed the demo risk check.",
+    durationMs: 93,
   });
 
   if (request.scenario === "PAYMENT_FAILED") {
@@ -69,14 +86,19 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       message: "Reserved stock was released; delivery was not booked.",
       durationMs: 0,
     });
+    trace.push({
+      agent: "Notification Agent",
+      status: "completed",
+      message: "A payment-failure update was added to recent orders.",
+      durationMs: 69,
+    });
 
     return {
-      orderId,
+      ...baseOrder,
       status: "PAYMENT_FAILED",
-      total,
-      deliveryFee,
       estimatedDelivery: null,
       paymentReference: null,
+      deliveryStatus: "NOT_CREATED",
       message: "Payment could not be authorised. No money was charged.",
       trace,
     };
@@ -98,14 +120,19 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
     message: `Shipment planned for ${request.customer.city} ${request.customer.pincode}.`,
     durationMs: 164,
   });
+  trace.push({
+    agent: "Notification Agent",
+    status: "completed",
+    message: "Confirmation and tracking details were added to recent orders.",
+    durationMs: 76,
+  });
 
   return {
-    orderId,
+    ...baseOrder,
     status: "CONFIRMED",
-    total,
-    deliveryFee,
     estimatedDelivery: deliveryDate(),
     paymentReference,
+    deliveryStatus: "PROCESSING",
     message: "Your order is confirmed and is being prepared for dispatch.",
     trace,
   };

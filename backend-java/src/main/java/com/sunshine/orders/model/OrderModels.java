@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.util.List;
+import java.time.Instant;
 
 public final class OrderModels {
     private OrderModels() {
@@ -14,9 +16,12 @@ public final class OrderModels {
 
     public record OrderItem(
             @NotBlank String productId,
+            @NotBlank String slug,
             @NotBlank String name,
             @Positive int price,
-            @Positive int quantity
+            @Positive int quantity,
+            String selectedSize,
+            @PositiveOrZero int availableStock
     ) {
     }
 
@@ -34,6 +39,8 @@ public final class OrderModels {
     public enum OrderScenario { SUCCESS, PAYMENT_FAILED, OUT_OF_STOCK }
 
     public enum OrderStatus { CONFIRMED, PAYMENT_FAILED, OUT_OF_STOCK }
+
+    public enum DeliveryStatus { PROCESSING, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, NOT_CREATED }
 
     public enum StepStatus { completed, failed, skipped }
 
@@ -60,6 +67,11 @@ public final class OrderModels {
             int deliveryFee,
             String estimatedDelivery,
             String paymentReference,
+            PaymentMethod paymentMethod,
+            DeliveryStatus deliveryStatus,
+            String destinationCity,
+            Instant createdAt,
+            List<OrderItem> items,
             String message,
             List<AgentStep> trace
     ) {

@@ -39,7 +39,7 @@ const women = makeProducts("women", [
   { name: "Ruhani Anarkali Set", brand: "Vastra", category: "women", price: 2799, mrp: 4999, rating: 4.7, reviews: 958, description: "Flowing Anarkali set with a printed dupatta for celebrations and weddings.", colour: "Wine", sizes: ["S", "M", "L", "XL"], badge: "Top rated", deliveryDays: 4, stock: 9 },
   { name: "Maya Wide-Leg Jeans", brand: "Drift", category: "women", price: 1399, mrp: 2499, rating: 4.2, reviews: 725, description: "High-rise stretch denim with a clean wide-leg silhouette.", colour: "Mid blue", sizes: ["26", "28", "30", "32", "34"], deliveryDays: 3, stock: 23 },
   { name: "Kavya Embroidered Top", brand: "Nila", category: "women", price: 699, mrp: 1299, rating: 4.1, reviews: 567, description: "Soft everyday top finished with understated tonal embroidery.", colour: "Ivory", sizes: ["XS", "S", "M", "L", "XL"], deliveryDays: 2, stock: 28 },
-  { name: "Diya Silk-Blend Lehenga", brand: "Vastra", category: "women", price: 3599, mrp: 6999, rating: 4.5, reviews: 341, description: "Three-piece festive lehenga set with a comfortable adjustable waist.", colour: "Emerald", sizes: ["S", "M", "L", "XL"], deliveryDays: 5, stock: 7 },
+  { name: "Diya Silk-Blend Lehenga", brand: "Vastra", category: "women", price: 3599, mrp: 6999, rating: 4.5, reviews: 341, description: "Three-piece festive lehenga set with a comfortable adjustable waist.", colour: "Emerald", sizes: ["S", "M", "L", "XL"], deliveryDays: 5, stock: 0 },
   { name: "Sana Everyday Palazzo", brand: "Anvi", category: "women", price: 599, mrp: 1099, rating: 4.0, reviews: 1104, description: "Fluid palazzo trousers with an elasticated waistband and two pockets.", colour: "Black", sizes: ["S", "M", "L", "XL", "XXL"], deliveryDays: 2, stock: 36 },
 ]);
 
@@ -71,7 +71,7 @@ const footwear = makeProducts("footwear", [
 
 const electronics = makeProducts("electronics", [
   { name: "Nova 5G Smartphone", brand: "Astra", category: "electronics", price: 18999, mrp: 22999, rating: 4.4, reviews: 3280, description: "5G smartphone with a 120 Hz display, 50 MP camera and all-day battery.", colour: "Midnight", badge: "Great value", deliveryDays: 2, stock: 17 },
-  { name: "Book Air 14 Laptop", brand: "Veda", category: "electronics", price: 54990, mrp: 62990, rating: 4.5, reviews: 842, description: "Slim 14-inch laptop with 16 GB RAM and 512 GB SSD for study and work.", colour: "Silver", badge: "Student pick", deliveryDays: 3, stock: 8 },
+  { name: "Book Air 14 Laptop", brand: "Veda", category: "electronics", price: 54990, mrp: 62990, rating: 4.5, reviews: 842, description: "Slim 14-inch laptop with 16 GB RAM and 512 GB SSD for study and work.", colour: "Silver", badge: "Only one left", deliveryDays: 3, stock: 1 },
   { name: "Pulse ANC Earbuds", brand: "Sonic", category: "electronics", price: 2499, mrp: 4999, rating: 4.3, reviews: 5210, description: "Wireless earbuds with active noise cancellation and 32-hour total playtime.", colour: "Black", badge: "Bestseller", deliveryDays: 2, stock: 42 },
   { name: "Fit Pro Smartwatch", brand: "Astra", category: "electronics", price: 3299, mrp: 5999, rating: 4.2, reviews: 2785, description: "AMOLED smartwatch with calling, GPS and health tracking.", colour: "Graphite", deliveryDays: 2, stock: 24 },
   { name: "Beam Mini Projector", brand: "Veda", category: "electronics", price: 6999, mrp: 9999, rating: 4.1, reviews: 613, description: "Portable 1080p-supported projector for small rooms and movie nights.", colour: "Ivory", deliveryDays: 4, stock: 9 },
@@ -97,7 +97,10 @@ const home = makeProducts("home", [
 
 export const products: Product[] = [...women, ...men, ...footwear, ...electronics, ...home];
 
-export const featuredProducts = products.filter((product) => product.badge).slice(0, 10);
+export const featuredProducts = [
+  ...products.filter((product) => product.stock <= 1),
+  ...products.filter((product) => product.badge && product.stock > 1),
+].slice(0, 10);
 
 export function getProduct(slug: string) {
   return products.find((product) => product.slug === slug);

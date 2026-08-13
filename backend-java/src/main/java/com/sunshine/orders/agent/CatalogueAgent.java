@@ -9,11 +9,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class CatalogueAgent {
     public AgentStep reserve(OrderRequest order) {
-        if (order.scenario() == OrderScenario.OUT_OF_STOCK) {
+        var unavailableItem = order.items().stream()
+                .filter(item -> item.availableStock() < item.quantity())
+                .findFirst();
+        if (order.scenario() == OrderScenario.OUT_OF_STOCK || unavailableItem.isPresent()) {
             return new AgentStep(
                     "Catalogue Agent",
                     StepStatus.failed,
-                    "One cart item became unavailable before reservation.",
+                    unavailableItem.map(item -> item.name() + " became unavailable before reservation.")
+                            .orElse("One cart item became unavailable before reservation."),
                     118
             );
         }

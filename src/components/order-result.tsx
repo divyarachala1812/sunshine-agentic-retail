@@ -2,28 +2,20 @@
 
 import Link from "next/link";
 import { Check, CircleAlert, PackageCheck, RotateCcw, X } from "lucide-react";
-import { useMemo, useSyncExternalStore } from "react";
+import { useCommerce } from "@/components/commerce-provider";
 import { formatInr } from "@/lib/format";
 import type { OrderResponse } from "@/types/commerce";
 
 export function OrderResult({ orderId }: { orderId: string }) {
-  const storageKey = `sunshine-order-${orderId}`;
-  const savedOrder = useSyncExternalStore(
-    () => () => undefined,
-    () => window.sessionStorage.getItem(storageKey),
-    () => null,
-  );
-  const order = useMemo(
-    () => (savedOrder ? (JSON.parse(savedOrder) as OrderResponse) : null),
-    [savedOrder],
-  );
+  const { findOrder } = useCommerce();
+  const order: OrderResponse | undefined = findOrder(orderId);
 
   if (!order) {
     return (
       <section className="shell empty-cart compact-empty">
         <h1>Order details are not available.</h1>
-        <p>This demo keeps order results only in the current browser session.</p>
-        <Link className="button button-primary" href="/">Back to Sunshine</Link>
+        <p>This order is not in the public examples or this browser’s order history.</p>
+        <Link className="button button-primary" href="/profile">View recent orders</Link>
       </section>
     );
   }
@@ -45,7 +37,7 @@ export function OrderResult({ orderId }: { orderId: string }) {
       <div className="shell order-content">
         <section className="trace-panel">
           <div className="section-heading">
-            <div><span className="eyebrow">Java agent orchestration</span><h2>What happened behind the order</h2><p>Each bounded agent completed one retail responsibility and passed control forward.</p></div>
+            <div><span className="eyebrow">Java agent orchestration</span><h2>What happened behind the order</h2><p>Five bounded agents validate inventory, risk, payment, delivery and the customer update.</p></div>
           </div>
           <ol className="agent-trace">
             {order.trace.map((step, index) => (
@@ -62,11 +54,14 @@ export function OrderResult({ orderId }: { orderId: string }) {
           <dl>
             <div><dt>Order number</dt><dd>{order.orderId}</dd></div>
             <div><dt>Status</dt><dd>{order.status.replaceAll("_", " ")}</dd></div>
+            <div><dt>Delivery</dt><dd>{order.deliveryStatus.replaceAll("_", " ")}</dd></div>
+            <div><dt>Payment</dt><dd>{order.paymentMethod}</dd></div>
             <div><dt>Delivery fee</dt><dd>{order.deliveryFee ? formatInr(order.deliveryFee) : "FREE"}</dd></div>
             <div><dt>Order total</dt><dd>{formatInr(order.total)}</dd></div>
             {order.paymentReference && <div><dt>Payment reference</dt><dd>{order.paymentReference}</dd></div>}
           </dl>
-          <Link className="button button-primary checkout-button" href={confirmed ? "/" : "/checkout"}>{confirmed ? "Continue shopping" : <><RotateCcw size={17} /> Try again</>}</Link>
+          <Link className="button button-primary checkout-button" href="/profile">View recent orders</Link>
+          {!confirmed && <Link className="text-link receipt-link" href="/checkout"><RotateCcw size={15} /> Try checkout again</Link>}
         </aside>
       </div>
     </section>

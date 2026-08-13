@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { CreditCard, Landmark, PackageCheck, Smartphone } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { useCommerce } from "@/components/commerce-provider";
 import { formatInr, getCartSubtotal, getDeliveryFee } from "@/lib/format";
 import type { OrderRequest, OrderResponse, OrderScenario } from "@/types/commerce";
 
 export function CheckoutForm() {
   const router = useRouter();
   const { lines, isReady, clearCart } = useCart();
+  const { consumeStock, getStock, markUnavailable, saveOrder } = useCommerce();
   const [paymentMethod, setPaymentMethod] = useState<OrderRequest["paymentMethod"]>("UPI");
   const [scenario, setScenario] = useState<OrderScenario>("SUCCESS");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,9 +40,12 @@ export function CheckoutForm() {
     const request: OrderRequest = {
       items: lines.map((line) => ({
         productId: line.product.id,
+        slug: line.product.slug,
         name: line.product.name,
         price: line.product.price,
         quantity: line.quantity,
+        selectedSize: line.selectedSize,
+        availableStock: getStock(line.product),
       })),
       customer: {
         name: String(form.get("name")),
@@ -61,8 +66,18 @@ export function CheckoutForm() {
       });
       const result = (await response.json()) as OrderResponse & { error?: string };
       if (!response.ok) throw new Error(result.error ?? "Order could not be processed");
-      window.sessionStorage.setItem(`sunshine-order-${result.orderId}`, JSON.stringify(result));
-      if (result.status === "CONFIRMED") clearCart();
+      saveOrder(result);
+      if (result.status === "CONFIRMED") {
+        consumeStock(request.items);
+        clearCart();
+      } else if (result.status === "OUT_OF_STOCK") {
+        const unavailableItems = request.items.filter(
+          (item) => item.availableStock < item.quantity,
+        );
+        (unavailableItems.length ? unavailableItems : request.items.slice(0, 1)).forEach(
+          (item) => markUnavailable(item.productId),
+        );
+      }
       router.push(`/order/${result.orderId}`);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Order could not be processed");

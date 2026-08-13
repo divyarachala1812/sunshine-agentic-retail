@@ -17,7 +17,7 @@ The project focuses on skills I can explain clearly in an interview:
 - Frontend development with React, TypeScript, Next.js and responsive CSS.
 - Java backend design with Spring Boot, validation, records, services and JUnit.
 - Python backend and data work with FastAPI, pandas and pytest.
-- Multi-agent orchestration using three bounded retail agents.
+- Multi-agent orchestration using five bounded retail agents.
 - Testing, Docker, GitHub Actions and Vercel deployment.
 
 ## Customer experience
@@ -28,6 +28,8 @@ The project focuses on skills I can explain clearly in an interview:
 - Persistent browser cart with quantity controls and a ₹999 free-delivery threshold.
 - Checkout with an Indian address, six-digit PIN code validation and UPI/card/COD choices.
 - Three controlled scenarios: successful order, payment declined and out of stock.
+- Profile and recent-order centre with persistent browser history and five public lifecycle examples.
+- Low-stock inventory that changes after confirmed purchases and remains unavailable on return.
 - Order number, payment reference, estimated delivery and agent-by-agent trace.
 
 | Product and Python recommendations | Checkout |
@@ -38,13 +40,15 @@ The project focuses on skills I can explain clearly in an interview:
 
 The agents are deterministic backend components, not generative AI chatbots. Each has one bounded responsibility and returns a structured result to the orchestrator.
 
-1. **Catalogue Agent** checks the cart and reserves stock. An out-of-stock result stops the workflow before payment.
-2. **Payment Agent** handles UPI, card or COD eligibility. A decline releases the reservation and skips fulfilment.
-3. **Fulfilment Agent** plans delivery only after the preceding steps pass.
+1. **Catalogue Agent** checks current browser inventory and reserves stock. An unavailable item stops the workflow before payment.
+2. **Risk Agent** applies explainable address, value and payment rules after reservation.
+3. **Payment Agent** handles UPI, card or COD eligibility. A decline releases the reservation and skips fulfilment.
+4. **Fulfilment Agent** plans delivery only after the preceding steps pass.
+5. **Notification Agent** records the correct success, payment-failure or stock update in recent orders.
 
-![Three-agent workflow](docs/screenshots/03-agent-workflow.jpg)
+![Five-agent workflow](docs/screenshots/03-agent-workflow.jpg)
 
-The successful path returns three completed steps:
+The successful path returns five completed steps:
 
 ![Confirmed order with Java agent trace](docs/screenshots/05-order-success.jpg)
 
@@ -62,8 +66,10 @@ flowchart LR
     O --> J[Spring Boot orchestrator]
     R --> P[FastAPI recommender]
     J --> C[Catalogue Agent]
-    C --> Y[Payment Agent]
+    C --> K[Risk Agent]
+    K --> Y[Payment Agent]
     Y --> F[Fulfilment Agent]
+    F --> T[Notification Agent]
     O -. Vercel .-> OA[TypeScript order adapter]
     R -. Vercel .-> RA[TypeScript scoring adapter]
 ```
@@ -71,6 +77,16 @@ flowchart LR
 For local development, the Next.js API routes proxy to the real Java and Python services. The public Vercel demo uses matching TypeScript adapters because Java is not an official Vercel Function runtime. This boundary is intentional and documented; the browser contract stays the same in both environments.
 
 See [architecture notes](docs/ARCHITECTURE.md) and [API contracts](docs/API_CONTRACTS.md) for the detailed design.
+
+## Profile, order history and inventory
+
+The profile page is useful immediately: every visitor can inspect examples for arriving today, shipped, delivered, payment failed and out of stock. Orders placed by a visitor are saved privately in that browser and shown above the public examples.
+
+![Profile and recent order states](docs/screenshots/07-profile-and-recent-orders.jpg)
+
+Confirmed orders reduce browser inventory. The featured laptop begins with one unit; after it is purchased, its product page changes to unavailable on return. Payment failures release the reservation and do not reduce stock. This is intentionally a client-side portfolio simulation, not a claim of shared warehouse inventory.
+
+![Unavailable product state](docs/screenshots/08-unavailable-product.jpg)
 
 ## Technology map
 
@@ -154,12 +170,12 @@ cd backend-python && PYTHONPATH=. python scripts/retail_kpis.py
 
 Current local verification:
 
-- 6 Vitest tests passed.
-- 3 JUnit tests passed.
+- 7 Vitest tests passed, including stock-aware orchestration.
+- 4 JUnit tests passed, including stock exhaustion.
 - 4 pytest tests passed.
 - ESLint passed.
-- Next.js production build generated 59 pages successfully.
-- Browser QA passed for product, cart, checkout, successful payment and declined-payment flows.
+- Next.js production build generated 60 pages successfully.
+- Browser QA passed for profile history, low-stock purchase, repeat-visit unavailability, successful payment and declined-payment flows.
 - Integration responses confirmed the Java order service and Python recommendation service were actually used.
 
 ## Repository guide
@@ -179,7 +195,7 @@ sunshine-agentic-retail/
 
 - All products, prices, ratings and orders are synthetic demonstrations.
 - Payments are simulations and never charge money.
-- The cart uses local storage; orders are not persisted in a database.
+- The cart, personal order history and inventory simulation use versioned local storage; there is no shared production database.
 - Agent durations are illustrative trace values, not performance benchmarks.
 - The recommendation model is content-based because no real customer history is collected.
 - Authentication and a real gateway are sensible future improvements, but excluded to keep the project credible at final-year student scope.

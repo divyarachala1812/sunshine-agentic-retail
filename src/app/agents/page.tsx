@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Boxes, CheckCircle2, CreditCard, PackageOpen } from "lucide-react";
+import { ArrowRight, BellRing, Boxes, CheckCircle2, CreditCard, PackageOpen, ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = { title: "Agent workflow" };
 
@@ -12,6 +12,14 @@ const agents = [
     decision: "Checks availability and reserves stock",
     output: "Reservation or out-of-stock stop",
     tech: "Spring Boot service",
+  },
+  {
+    name: "Risk Agent",
+    icon: ShieldCheck,
+    input: "Address, order value and payment type",
+    decision: "Applies explainable demo risk rules",
+    output: "Approved order or manual-review stop",
+    tech: "Java policy component",
   },
   {
     name: "Payment Agent",
@@ -29,6 +37,14 @@ const agents = [
     output: "Confirmed shipment plan",
     tech: "Java domain service",
   },
+  {
+    name: "Notification Agent",
+    icon: BellRing,
+    input: "Final workflow result and trace",
+    decision: "Chooses the correct customer update",
+    output: "Order-history and tracking event",
+    tech: "Java event component",
+  },
 ];
 
 export default function AgentsPage() {
@@ -39,7 +55,7 @@ export default function AgentsPage() {
           <span className="eyebrow">The system behind Sunshine</span>
           <h1>Small agents. Clear jobs. One reliable order journey.</h1>
           <p>
-            Sunshine uses three deterministic software agents. They are not generative AI
+            Sunshine uses five deterministic software agents. They are not generative AI
             chatbots; each is a bounded backend component that makes one retail decision and
             records what happened for the next component.
           </p>
@@ -80,7 +96,7 @@ export default function AgentsPage() {
           </div>
           <div className="architecture-list">
             <article><strong>Frontend</strong><h3>Next.js + React + TypeScript</h3><p>Catalogue, search, cart, checkout and responsive interactions.</p></article>
-            <article><strong>Java backend</strong><h3>Spring Boot orchestration</h3><p>Typed order contracts, three agents, failure handling and JUnit tests.</p></article>
+            <article><strong>Java backend</strong><h3>Spring Boot orchestration</h3><p>Typed order contracts, five bounded agents, failure handling and JUnit tests.</p></article>
             <article><strong>Python backend</strong><h3>FastAPI recommendations</h3><p>Content-based product scoring plus a reproducible retail KPI script.</p></article>
             <article><strong>Deployment</strong><h3>Vercel-compatible adapters</h3><p>The public demo stays functional while preserving the same Java and Python API contracts.</p></article>
           </div>

@@ -4,16 +4,20 @@ import Link from "next/link";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { useCommerce } from "@/components/commerce-provider";
 import { ProductVisual } from "@/components/product-visual";
 import { discountPercent, formatInr } from "@/lib/format";
 import type { Product } from "@/types/commerce";
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { getStock } = useCommerce();
+  const stock = getStock(product);
   const [added, setAdded] = useState(false);
   const defaultSize = product.sizes?.[0];
 
   const handleAdd = () => {
+    if (stock === 0) return;
     addItem(product, defaultSize);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1200);
@@ -23,6 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="product-card">
       <Link className="product-card-visual" href={`/products/${product.slug}`}>
         {product.badge && <span className="product-badge">{product.badge}</span>}
+        {stock <= 3 && <span className={`inventory-badge ${stock === 0 ? "inventory-out" : ""}`}>{stock === 0 ? "Out of stock" : `Only ${stock} left`}</span>}
         <button className="wish-button" aria-label={`Save ${product.name}`} type="button" onClick={(event) => event.preventDefault()}>
           <Heart size={18} />
         </button>
@@ -41,8 +46,8 @@ export function ProductCard({ product }: { product: Product }) {
           <span>{discountPercent(product.price, product.mrp)}% off</span>
         </div>
         <p className="delivery-note">{product.price >= 999 ? "Free delivery" : "Delivery ₹79"} · {product.deliveryDays}–{product.deliveryDays + 2} days</p>
-        <button className="add-button" type="button" onClick={handleAdd}>
-          <ShoppingBag size={17} /> {added ? "Added to cart" : "Add to cart"}
+        <button className="add-button" disabled={stock === 0} type="button" onClick={handleAdd}>
+          <ShoppingBag size={17} /> {stock === 0 ? "Unavailable" : added ? "Added to cart" : "Add to cart"}
         </button>
       </div>
     </article>

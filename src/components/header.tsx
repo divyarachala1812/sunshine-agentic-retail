@@ -32,7 +32,7 @@ export function Header() {
           <button type="submit">Search</button>
         </form>
         <nav className="header-actions" aria-label="Account and cart">
-          <span className="account-link"><UserRound size={21} /><span>Hello, Divya</span></span>
+          <Link className="account-link" href="/profile"><UserRound size={21} /><span>Profile & orders</span></Link>
           <Link className="cart-link" href="/cart" aria-label={`Cart with ${itemCount} items`}>
             <ShoppingBag size={22} />
             <span>Cart</span>
@@ -48,6 +48,7 @@ export function Header() {
           </Link>
         ))}
         <Link className="agent-nav-link" href="/agents">Agent workflow</Link>
+        <Link href="/profile">Recent orders</Link>
       </nav>
     </header>
   );
