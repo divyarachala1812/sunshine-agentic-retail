@@ -48,7 +48,11 @@ const tools = [
   },
   {
     type: "function",
-    function: { name: "help", description: "Explain what Sunshine support can do or answer a general store-help question.", parameters: { type: "object", properties: {} } },
+    function: {
+      name: "help",
+      description: "Answer a question about the Sunshine website, shopping policies, delivery, payment, returns, account, privacy or how to use the store.",
+      parameters: { type: "object", required: ["query"], properties: { query: { type: "string" } } },
+    },
   },
 ];
 
@@ -70,7 +74,8 @@ function intentFromCall(call: OllamaToolCall): AssistantIntent | null {
     };
   }
   if (name === "lookup_order") return { kind: "lookup_order", orderId: asText(args.orderId)?.toUpperCase() ?? "" };
-  if (name === "list_orders" || name === "view_cart" || name === "checkout" || name === "help") return { kind: name };
+  if (name === "list_orders" || name === "view_cart" || name === "checkout") return { kind: name };
+  if (name === "help") return { kind: "help", query: asText(args.query) };
   return null;
 }
 

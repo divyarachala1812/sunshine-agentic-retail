@@ -27,7 +27,7 @@ export type AssistantRequest = {
 export type AssistantAction = {
   label: string;
   href: string;
-  kind: "cart" | "checkout" | "order" | "profile" | "help";
+  kind: "cart" | "checkout" | "order" | "profile" | "account" | "help";
 };
 
 export type AssistantReply = {
@@ -45,4 +45,4 @@ export type AssistantIntent =
   | { kind: "list_orders" }
   | { kind: "view_cart" }
   | { kind: "checkout" }
-  | { kind: "help" };
+  | { kind: "help"; query?: string };

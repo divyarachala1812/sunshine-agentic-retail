@@ -8,6 +8,7 @@ import { useCart } from "@/components/cart-provider";
 import { useCommerce } from "@/components/commerce-provider";
 import { ProductVisual } from "@/components/product-visual";
 import { products } from "@/data/products";
+import { createAssistantReply } from "@/lib/customer-assistant";
 import { formatInr } from "@/lib/format";
 import type { AssistantMessage, AssistantReply } from "@/types/assistant";
 import type { Product } from "@/types/commerce";
@@ -80,6 +81,17 @@ export function CustomerAssistant() {
     if (!content || pending) return;
     const userMessage: ConversationMessage = { role: "user", content };
     const nextMessages = [...messages, userMessage];
+    const supportRequest = {
+      messages: nextMessages.map(({ role, content: messageContent }) => ({ role, content: messageContent })),
+      orders,
+      cart: lines.map((line) => ({
+        productId: line.product.id,
+        name: line.product.name,
+        quantity: line.quantity,
+        selectedSize: line.selectedSize,
+      })),
+      inventory: products.map((product) => ({ productId: product.id, availableStock: getStock(product) })),
+    };
     setMessages(nextMessages);
     setInput("");
     setPending(true);
@@ -87,27 +99,14 @@ export function CustomerAssistant() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages.map(({ role, content: messageContent }) => ({ role, content: messageContent })),
-          orders,
-          cart: lines.map((line) => ({
-            productId: line.product.id,
-            name: line.product.name,
-            quantity: line.quantity,
-            selectedSize: line.selectedSize,
-          })),
-          inventory: products.map((product) => ({ productId: product.id, availableStock: getStock(product) })),
-        }),
+        body: JSON.stringify(supportRequest),
       });
       const reply = (await response.json()) as AssistantReply & { error?: string };
       if (!response.ok) throw new Error(reply.error ?? "Support is unavailable");
       setMessages((current) => [...current, { role: "assistant", content: reply.message, reply }]);
     } catch {
-      setMessages((current) => [...current, {
-        role: "assistant",
-        content: "I couldn’t connect just now. You can still browse the catalogue, open your cart, or check recent orders from the profile menu.",
-        reply: { message: "", products: [], quickReplies: ["Try again", "What is in my cart?"], actions: [], source: "sunshine" },
-      }]);
+      const reply = createAssistantReply(supportRequest);
+      setMessages((current) => [...current, { role: "assistant", content: reply.message, reply }]);
     } finally {
       setPending(false);
     }

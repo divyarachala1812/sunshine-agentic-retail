@@ -45,4 +45,20 @@ describe("Sunshine customer assistant", () => {
   it("recognises checkout intent without allowing the model to place an order", () => {
     expect(inferIntent(request("Place my order")).kind).toBe("checkout");
   });
+
+  it("answers website policy questions with Sunshine facts", () => {
+    const reply = createAssistantReply(request("How much is delivery and when will it arrive?"));
+    expect(reply.message).toContain("₹999");
+    expect(reply.message).toContain("₹79");
+  });
+
+  it("keeps unrelated questions outside the support scope", () => {
+    const reply = createAssistantReply(request("What is the weather tomorrow?"));
+    expect(reply.message).toContain("only help with the Sunshine website");
+  });
+
+  it("explains returns and browser data using website policies", () => {
+    expect(createAssistantReply(request("How do returns work?")).message).toContain("seven day return policy");
+    expect(createAssistantReply(request("What information is saved?")).message).toContain("local storage");
+  });
 });

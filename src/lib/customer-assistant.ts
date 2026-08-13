@@ -23,6 +23,7 @@ const synonymGroups: Array<[string[], string[]]> = [
 
 const styleTerms = ["casual", "everyday", "running", "formal", "festive", "wedding", "college", "work", "sports", "slides", "sandals", "heels", "flats", "jutti"];
 const productTerms = ["sneaker", "shoe", "footwear", "kurta", "saree", "lehenga", "dress", "shirt", "jeans", "trouser", "jacket", "laptop", "phone", "earbud", "watch", "speaker", "tablet", "monitor", "keyboard", "bag", "backpack", "tote", "bedsheet", "comforter", "lamp", "fan", "home", "electronics", "fashion"];
+const outsideTopics = /\b(weather|news|politics|election|cricket score|movie review|write code|coding homework|essay|capital of|stock market|horoscope|recipe|medical advice|legal advice)\b/;
 
 function clean(value: string) {
   return value.toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9₹., -]/g, " ").replace(/\s+/g, " ").trim();
@@ -131,7 +132,101 @@ export function inferIntent(request: AssistantRequest): AssistantIntent {
       maxPrice: detectMaxPrice(latest) ?? detectMaxPrice(context),
     };
   }
-  return { kind: "help" };
+  return { kind: "help", query: latest };
+}
+
+function helpReply(query: string, reply: AssistantReply) {
+  const text = clean(query);
+  reply.actions = [{ label: "Open help centre", href: "/help", kind: "help" }];
+
+  if (outsideTopics.test(text)) {
+    reply.message = "I can only help with the Sunshine website and shopping journey. You can ask me about products, sizes, stock, prices, cart, checkout, payments, delivery, returns, account settings or Sunshine orders.";
+    reply.quickReplies = ["Help me find a product", "Explain delivery", "Show my recent orders"];
+    return reply;
+  }
+  if (/\b(return|returns|refund|refunds|exchange|exchanges)\b/.test(text)) {
+    reply.message = "Sunshine demonstrates an easy seven day return policy, but no physical product is shipped and no real refund is processed. For this project, returns are explained in the Help centre rather than submitted to a live warehouse.";
+    reply.quickReplies = ["How does delivery work?", "What payment methods are available?"];
+    return reply;
+  }
+  if (/\b(cancel|cancellation)\b/.test(text)) {
+    reply.message = "Order cancellation is not enabled in this demonstration. A failed payment creates no shipment, and an unavailable item stops before payment. You can review every result under Recent orders.";
+    reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
+    return reply;
+  }
+  if (/\b(payment|upi|card|cash on delivery|cod|charge|charged|pay)\b/.test(text)) {
+    reply.message = "Checkout supports simulated UPI, card and cash on delivery. Sunshine never makes a real charge and you should enter sample information only. A declined payment keeps the cart available so you can try again.";
+    reply.actions = [{ label: "Review checkout", href: "/checkout", kind: "checkout" }];
+    reply.quickReplies = ["Explain delivery charges", "What happens if payment fails?"];
+    return reply;
+  }
+  if (/\b(delivery|deliver|shipping|shipment|arrive|arrival|fee|free delivery|how long)\b/.test(text)) {
+    reply.message = "Product pages show a delivery estimate. Delivery is free when the cart subtotal is at least ₹999 and costs ₹79 below that amount. Confirmed orders show their own delivery update in Recent orders. All dates and shipments are demonstrations.";
+    reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
+    reply.quickReplies = ["Track an order", "Explain returns"];
+    return reply;
+  }
+  if (/\b(size|fit|fitting|shoe size)\b/.test(text)) {
+    reply.message = "Available sizes appear on each product card in this conversation and on the product page. Tell me the product type, audience, style and size, and I will only recommend catalogue options that include that size.";
+    reply.quickReplies = ["Women · casual · size 7", "Men · running · size 9"];
+    return reply;
+  }
+  if (/\b(stock|available|availability|unavailable|sold out|only one|left)\b/.test(text)) {
+    reply.message = "Stock comes from the Sunshine catalogue and this browser’s demonstration inventory. Low stock products show how many units remain. A successful purchase reduces browser stock, while a failed payment does not.";
+    reply.quickReplies = ["Show casual sneakers", "Find electronics under ₹3,000"];
+    return reply;
+  }
+  if (/\b(price|cost|discount|offer|mrp|gst|rupee|₹)\b/.test(text)) {
+    reply.message = "All prices are shown in Indian rupees and include GST for this demonstration. Product cards show the selling price, MRP and discount when available. Tell me a category and budget to narrow the catalogue.";
+    reply.quickReplies = ["Electronics under ₹3,000", "Shoes under ₹2,000"];
+    return reply;
+  }
+  if (/\b(account|profile|privacy|data|information|saved|save my|login|sign in|password|personal details|browser storage)\b/.test(text)) {
+    reply.message = "Sunshine uses a public demonstration profile and does not require sign in. Cart items, personal demonstration orders and inventory changes stay in this browser’s local storage. The project has no shared customer database.";
+    reply.actions = [{ label: "Open account settings", href: "/account", kind: "account" }];
+    reply.quickReplies = ["Show my recent orders", "What information is saved?"];
+    return reply;
+  }
+  if (/\b(address|pincode|pin code|location|city|hyderabad|india)\b/.test(text)) {
+    reply.message = "The checkout demonstrates Indian address fields, a ten digit mobile number and a six digit PIN code. Hyderabad 500081 is the default example location. Please use sample details because no physical delivery is performed.";
+    reply.actions = [{ label: "Review checkout", href: "/checkout", kind: "checkout" }];
+    return reply;
+  }
+  if (/\b(category|categories|what do you sell|catalogue|products|brands)\b/.test(text)) {
+    reply.message = "Sunshine has 50 synthetic products across women’s fashion, men’s fashion, footwear and bags, electronics, and home and living. I can search them by product, style, size and budget.";
+    reply.quickReplies = ["Suggest a kurta", "Show casual sneakers", "Find electronics under ₹3,000"];
+    return reply;
+  }
+  if (/\b(search|filter|browse|navigate|find something|use the website)\b/.test(text)) {
+    reply.message = "Use the search field at the top for a product or brand, choose a category for a broader list, or tell me what you need and I will search the verified catalogue for you. You can open product details, select a size when required and add an available item to the cart.";
+    reply.quickReplies = ["Help me find a product", "Show casual sneakers", "Find electronics under ₹3,000"];
+    return reply;
+  }
+  if (/\b(order|track|tracking|package|parcel)\b/.test(text)) {
+    reply.message = "Open Recent orders from the profile menu to see all demonstration orders. For one exact update, send me the complete order number beginning with SUN and I will return its status, items and delivery information from Sunshine data.";
+    reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
+    reply.quickReplies = ["Show my recent orders"];
+    return reply;
+  }
+  if (/\b(save|wishlist|favourite|favorite)\b/.test(text)) {
+    reply.message = "Wishlist saving is not persisted in this version. You can add an available product to the cart, and the cart remains in this browser until it is cleared or a successful order is completed.";
+    reply.actions = [{ label: "Open cart", href: "/cart", kind: "cart" }];
+    return reply;
+  }
+  if (/\b(what is sunshine|about sunshine|purpose|demo|real store|real website|how does this work)\b/.test(text)) {
+    reply.message = "Sunshine is a student built Indian ecommerce demonstration. It connects product discovery, Divya shopping support, cart, simulated checkout, stock outcomes, delivery updates and recent orders using consistent project data. It does not sell or ship real products.";
+    reply.quickReplies = ["What can Divya do?", "How does checkout work?"];
+    return reply;
+  }
+  if (/\b(what can you do|who are you|divya|assistant|help me|support)\b/.test(text)) {
+    reply.message = "I’m Divya, Sunshine’s shopping assistant. I can find verified products by style, size and budget, add a selected product to your cart, explain any part of this website, summarise your cart, and track Sunshine orders by order number.";
+    reply.quickReplies = ["Help me find sneakers", "What is in my cart?", "Show my recent orders"];
+    return reply;
+  }
+
+  reply.message = "I can help with anything about Sunshine: products, sizes, stock, prices, cart, checkout, payments, delivery, returns, account settings and orders. Tell me what you are trying to do on the website, and I’ll guide you using Sunshine information only.";
+  reply.quickReplies = ["Help me find a product", "Explain checkout", "Track an order"];
+  return reply;
 }
 
 export function respondToIntent(
@@ -222,10 +317,7 @@ export function respondToIntent(
     return reply;
   }
 
-  reply.message = "Hi, I’m Divya, Sunshine’s shopping assistant. I can find products by style, size and budget, add a selected item to your cart, explain checkout, or track an order when you share its order number.";
-  reply.quickReplies = ["Help me find sneakers", "Show my recent orders", "What is in my cart?"];
-  reply.actions = [{ label: "Open help centre", href: "/help", kind: "help" }];
-  return reply;
+  return helpReply(intent.query ?? latestMessage(request), reply);
 }
 
 export function createAssistantReply(request: AssistantRequest) {
