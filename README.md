@@ -4,6 +4,8 @@ Sunshine is an India-first retail portfolio project that takes a shopper from se
 
 Built by **Divya Rachala** as a final-year data science and software portfolio project.
 
+**Live demo:** [sunshine-agentic-retail.vercel.app](https://sunshine-agentic-retail.vercel.app)
+
 ![Sunshine storefront](docs/screenshots/01-storefront.jpg)
 
 ## Why I built this
