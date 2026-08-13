@@ -190,7 +190,8 @@ The detailed PDF report in [`output/pdf/Sunshine_Project_Report.pdf`](output/pdf
 
 ## Author
 
-**Divya Rachala** · Bachelor’s student in Data Science  
+**Divya Rachala** · Bachelor’s student in Data Science
+
 GitHub: [divyarachala1812](https://github.com/divyarachala1812)
 
 Released under the [MIT License](LICENSE).
