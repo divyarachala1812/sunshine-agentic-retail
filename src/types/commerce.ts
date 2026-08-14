@@ -59,6 +59,7 @@ export type AgentStep = {
     | "Risk Agent"
     | "Payment Agent"
     | "Fulfilment Agent"
+    | "Delivery Agent"
     | "Notification Agent";
   status: "completed" | "failed" | "skipped";
   message: string;
@@ -71,6 +72,35 @@ export type DeliveryStatus =
   | "OUT_FOR_DELIVERY"
   | "DELIVERED"
   | "NOT_CREATED";
+
+export type OrderMilestoneCode =
+  | "ORDER_RECEIVED"
+  | "INVENTORY_RESERVED"
+  | "PAYMENT_APPROVED"
+  | "PICKING"
+  | "PACKED"
+  | "SHIPPED"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED";
+
+export type OrderMilestone = {
+  code: OrderMilestoneCode;
+  label: string;
+  state: "COMPLETED" | "CURRENT" | "UPCOMING" | "STOPPED";
+  message: string;
+  occurredAt: string | null;
+};
+
+export type InventoryDisposition = "COMMITTED" | "RELEASED" | "REJECTED";
+
+export type InventoryLine = {
+  productId: string;
+  name: string;
+  requested: number;
+  availableBefore: number;
+  reserved: number;
+  availableAfter: number;
+};
 
 export type OrderResponse = {
   orderId: string;
@@ -85,5 +115,8 @@ export type OrderResponse = {
   createdAt: string;
   items: OrderRequest["items"];
   message: string;
+  inventoryDisposition: InventoryDisposition;
+  inventory: InventoryLine[];
+  milestones: OrderMilestone[];
   trace: AgentStep[];
 };

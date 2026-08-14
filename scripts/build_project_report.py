@@ -15,161 +15,208 @@ def build_report() -> Path:
     kpis = json.loads((ROOT / "reports/retail_kpis.json").read_text())
     sections = [
         {
-            "title": "Project overview and problem statement",
+            "title": "Problem statement, root cause and purpose",
             "paragraphs": [
-                "Sunshine is a student-scale retail platform covering product discovery, cart, checkout, payment outcomes, delivery estimates, recent orders, inventory changes, and website-specific conversational support. I built it because many small commerce demonstrations use disconnected data and cannot verify what happens after an error.",
-                "The platform connects a Next.js customer interface, a Java Spring Boot order service, a Python FastAPI recommendation service, and a pandas KPI workflow. All products, payments, addresses, and orders are synthetic demonstrations.",
+                "Sunshine is an Indian retail application that covers product discovery, conversational support, cart, checkout, inventory decisions, payment outcomes, fulfilment, delivery tracking, recent orders and retail analytics. I selected this problem because many small commerce projects demonstrate attractive screens but cannot explain the complete order state after a customer selects Place order.",
+                "The root cause is disconnected state. Product recommendations may not use the real catalogue, checkout may trust an old stock value, payment failure may leave a unit incorrectly deducted, and order history may contain a delivery promise that was never created. These inconsistencies are important because the customer interface can appear successful even when the underlying rules are incomplete.",
+                "The purpose of Sunshine is to connect those decisions through one inspectable project. The customer sees familiar shopping language, while the source code and report preserve the internal agent handoffs, inventory snapshots and failure evidence needed to verify the result.",
+            ],
+            "table": [
+                ["Project objective", "Evidence used"],
+                ["Connect discovery to checkout", "One 50 product catalogue supports search, chat, cart and recommendations"],
+                ["Preserve stock correctness", "Before, held and after quantity returned for every order line"],
+                ["Explain success and failure", "Eight customer milestones and three reproducible checkout branches"],
+                ["Keep the result measurable", "23 automated tests and a reproducible 12 row analytics fixture"],
             ],
         },
         {
-            "title": "System design and project boundaries",
+            "title": "Project scope and data design",
             "paragraphs": [
-                "The customer interface contains fifty products across five retail categories and supports INR pricing, sizes, stock states, delivery rules, account views, and order history. The assistant can answer Sunshine questions, recommend verified products, add a selected option to the cart, and retrieve an exact order.",
-                "Java owns typed order validation and the success, payment-failure, and out-of-stock sequence. Python ranks same-category recommendations and produces retail KPIs. Vercel can use contract-compatible adapters when the external services are not configured. The project does not contain production authentication, a real payment gateway, or a shared customer database.",
+                "The catalogue contains 50 synthetic products across women's fashion, men's fashion, footwear and bags, electronics, and home and living. Each record contains a stable identifier, slug, category, Indian rupee price, list price, rating, colour, delivery time, available quantity and optional sizes. The dataset is intentionally bounded because this project evaluates connected software behaviour rather than a statistical model that benefits from millions of observations.",
+                "Public example orders make arriving today, shipped, delivered, payment failed and out of stock states visible on a first visit. Personal orders, cart quantities and stock changes are stored only in the visitor's browser. Versioned storage keys prevent an older response schema from being mixed with the current inventory and milestone contract.",
+                "A separate 12 row synthetic raw order file supports the analytics workflow. It contains enough outcome, category, city and revenue variation to demonstrate cleaning, confirmation rate, revenue, average order value and leading segment calculations without implying production scale.",
+            ],
+            "table": [
+                ["Data area", "Scale", "Use"],
+                ["Catalogue", "50 products, 5 categories", "Discovery, chat, cart and stock"],
+                ["Public orders", "5 scenario examples", "Recent orders and delivery states"],
+                ["Analytics fixture", "12 raw order rows", "Reproducible KPI calculations"],
+                ["Customer state", "Per browser", "Cart, personal orders and stock changes"],
             ],
         },
         {
-            "title": "Testing methodology",
+            "title": "Customer journey",
             "paragraphs": [
-                "I tested business behaviour at four levels: TypeScript unit tests for pricing, chat, cart and order rules; JUnit tests for Java order outcomes; pytest tests for Python recommendation ranking and validation; and browser captures for storefront, product, checkout, profile, and unavailable-product flows.",
-                "The tests target both successful and failed paths. A successful order clears the cart and creates a delivery estimate. A payment failure skips fulfilment and preserves the cart. Stock exhaustion stops before payment. The assistant refuses unrelated questions.",
+                "A customer can search the catalogue, select a category, review a product, choose a size, add an item to the cart and continue to checkout. The interface uses Indian address fields, INR prices, UPI, card and cash on delivery choices, free delivery rules and an explicit statement that no real payment is collected.",
+                "Divya, the customer facing assistant, can interpret a shopping request, ask for missing preferences, recommend verified catalogue products, add a selected size to the cart, explain checkout rules and retrieve an exact order number. Product and order facts are resolved from application data rather than generated by the model.",
+                "After checkout, the order page shows a complete journey instead of a single success message. Customers can see which stage is completed, current, upcoming or stopped, together with the inventory result for each ordered product. Recent orders remain available from the profile menu.",
             ],
         },
         {
-            "title": "Experiment 1: synthetic order outcomes",
-            "figure": FIGURES / "01_order_outcomes.png",
-            "caption": "Figure 1. Received, confirmed, and non-confirmed orders in the analytics sample.",
-            "explanation": [
-                [
-                    "What I tested",
-                    "Whether the pandas workflow calculates order counts and confirmation rate from raw synthetic order rows.",
-                ],
-                [
-                    "What the graph shows",
-                    f"Nine of {kpis['orders_received']} orders are confirmed, producing a {kpis['confirmation_rate_pct']:.1f} percent confirmation rate.",
-                ],
-                [
-                    "Conclusion",
-                    "The analytics output reconciles order status into a clear funnel and keeps failed outcomes visible.",
-                ],
+            "title": "System architecture and responsibility boundaries",
+            "paragraphs": [
+                "The Next.js 16 and React 19 application owns the storefront, chat interface, cart, checkout, profile, customer milestones and browser persistence. Route handlers provide stable order, recommendation and conversation endpoints. A hosted TypeScript adapter preserves the order contract when the external Java service is not configured on Vercel.",
+                "The Java 17 Spring Boot service owns request validation and deterministic order coordination. The Python FastAPI service owns content based recommendation ranking. A pandas script validates the raw analytics fixture and writes governed KPI output. Docker Compose provides a local combined runtime, while GitHub Actions and language specific test runners verify each boundary.",
+                "The language model boundary is limited to interpreting conversational intent. Ollama does not create prices, sizes, inventory quantities, order states or delivery dates. If the model is unavailable, built in intent logic provides the same supported website actions.",
+            ],
+            "table": [
+                ["Component", "Primary responsibility", "Failure boundary"],
+                ["Next.js storefront", "Customer interaction and hosted API contract", "Displays safe result returned by the service"],
+                ["Spring Boot", "Order sequence, inventory outcome and delivery milestones", "Stops downstream agents after a required failure"],
+                ["FastAPI", "Deterministic related product ranking", "Returns validated catalogue suggestions only"],
+                ["pandas workflow", "Raw order cleaning and retail KPIs", "Rejects invalid analytical inputs"],
+                ["Ollama support", "Natural language intent selection", "Falls back to bounded local rules"],
             ],
         },
         {
-            "title": "Experiment 2: automated test suites",
-            "figure": FIGURES / "02_test_suites.png",
-            "caption": "Figure 2. Passing automated tests across the three implementation languages.",
-            "explanation": [
-                [
-                    "What I tested",
-                    "Pricing, chat scope, stock, payment failure, orchestration, ranking, API responses, and request validation.",
-                ],
-                [
-                    "What the graph shows",
-                    "Fifteen frontend tests, four Java tests, and four Python tests pass.",
-                ],
-                [
-                    "Conclusion",
-                    "Critical business rules are verified independently in each runtime rather than only through the visible interface.",
-                ],
+            "title": "Order orchestration experiment",
+            "paragraphs": [
+                "The order service uses six bounded components coordinated by OrderOrchestrator. Catalogue Agent handles the availability reservation, Risk Agent checks deterministic address and order rules, Payment Agent handles the simulated method, Fulfilment Agent plans picking and packing, Delivery Agent creates the tracking contract, and Notification Agent records the final update.",
+                "These agents are ordinary Java components rather than language model agents. Each one returns a typed result, which makes the stopping rules visible and independently testable. The customer interface deliberately translates the trace into normal order language and does not expose internal agent names.",
             ],
-        },
-        {
-            "title": "Experiment 3: retail KPI outputs",
-            "figure": FIGURES / "03_retail_kpis.png",
-            "caption": "Figure 3. Confirmed revenue and average order value from the reproducible KPI workflow.",
-            "explanation": [
-                [
-                    "What I tested",
-                    "Whether confirmed-order revenue and average order value are calculated from the synthetic source file.",
-                ],
-                [
-                    "What the graph shows",
-                    f"Confirmed revenue is INR {kpis['confirmed_revenue_inr']:,} and average order value is INR {kpis['average_order_value_inr']:,.2f}.",
-                ],
-                [
-                    "Conclusion",
-                    "The application includes a measurable data workflow in addition to customer-interface behaviour.",
-                ],
-            ],
-        },
-        {
-            "title": "Experiment 4: workflow failure paths",
             "figure": FIGURES / "04_workflow_paths.png",
-            "caption": "Figure 4. Exact completed, failed, and skipped trace steps for each order scenario.",
+            "caption": "Figure 1. Completed, failed and skipped agent outcomes for each checkout branch.",
             "explanation": [
-                [
-                    "What I tested",
-                    "Whether downstream steps stop safely when a prerequisite fails.",
-                ],
-                [
-                    "What the graph shows",
-                    "Success records five completed steps. Payment failure records three completed, one failed, and one skipped step. Stock failure records one completed notification, one failed stock check, and three skipped steps.",
-                ],
-                [
-                    "Conclusion",
-                    "Failure is an explicit state with a traceable outcome rather than a generic message or silent partial order.",
-                ],
+                ["Test question", "Does each required failure stop agents that would otherwise create payment, fulfilment or delivery side effects?"],
+                ["Observed result", "All six agents complete for confirmation. Payment failure stops fulfilment and delivery. An unavailable quantity stops risk, payment, fulfilment and delivery while notification still records the outcome."],
+                ["Interpretation", "The coordinator produces an explicit partial trace instead of silently continuing after failure. This is the central orchestration evidence in the project."],
             ],
         },
         {
-            "title": "Experiment 5: application scale",
-            "figure": FIGURES / "05_application_scale.png",
-            "caption": "Figure 5. Catalogue and generated-route scale checks.",
-            "explanation": [
-                [
-                    "What I tested",
-                    "Whether the catalogue and production build contain the intended number of products, categories, and generated pages.",
-                ],
-                [
-                    "What the graph shows",
-                    "The build contains 50 products, five categories, and 63 generated pages.",
-                ],
-                [
-                    "Conclusion",
-                    "The project is large enough to exercise repeated product and route behaviour while remaining understandable as a student project.",
-                ],
-            ],
-        },
-        {
-            "title": "Interface evidence and observed behaviour",
+            "title": "Inventory reservation experiment",
             "paragraphs": [
-                "The following test capture verifies the complete checkout form and outcome controls used for safe demonstration testing. Additional committed captures cover the storefront, product recommendations, profile and recent orders, and a product that becomes unavailable after the final unit is used."
+                "A stock number should not be permanently reduced simply because checkout started. Sunshine therefore separates a temporary hold from the final inventory decision. Every response includes a disposition and a per item snapshot containing requested quantity, quantity available before checkout, quantity held and quantity available after the branch completes.",
+            ],
+            "figure": FIGURES / "05_inventory_transitions.png",
+            "caption": "Figure 2. Inventory transitions for confirmed, payment failed and unavailable branches.",
+            "explanation": [
+                ["Test question", "Is stock committed only after payment succeeds, and is the earlier value restored after a decline?"],
+                ["Observed result", "Confirmation moves Available to Reserved to Committed. Payment failure moves Available to Reserved to Released. A stock conflict moves Available directly to Rejected before payment."],
+                ["Interpretation", "The state model prevents two common demonstration errors: charging for unavailable products and losing stock after a declined payment."],
+            ],
+        },
+        {
+            "title": "Customer delivery lifecycle experiment",
+            "paragraphs": [
+                "A confirmed order begins a separate customer lifecycle. The same eight stage contract is returned by Java and the hosted adapter. Public examples advance that contract to shipped, out for delivery and delivered so the reviewer can inspect more than the first successful checkout state.",
+            ],
+            "figure": FIGURES / "06_delivery_lifecycle.png",
+            "caption": "Figure 3. Eight ordered milestones from order receipt through delivery.",
+            "explanation": [
+                ["Test question", "Can every order state be explained using an ordered, typed milestone rather than a loose message?"],
+                ["Observed result", "The contract contains order received, items reserved, payment confirmed, picking, packed, shipped, out for delivery and delivered."],
+                ["Interpretation", "A successful new order marks picking as current; failure branches mark the stopping point and every later stage as stopped."],
+            ],
+        },
+        {
+            "title": "Analytics preparation and order outcome experiment",
+            "paragraphs": [
+                "The analytics script reads the raw synthetic order file, validates required columns and normalises confirmed outcomes before calculating summary measures. The raw file is retained separately from the generated KPI output so the calculations can be reproduced and reviewed.",
+            ],
+            "figure": FIGURES / "01_order_outcomes.png",
+            "caption": "Figure 4. Received, confirmed and non confirmed orders in the analytics fixture.",
+            "explanation": [
+                ["Test question", "Does the KPI workflow reconcile raw status values into a transparent order funnel?"],
+                ["Observed result", f"Nine of {kpis['orders_received']} orders are confirmed and three are not confirmed, producing a {kpis['confirmation_rate_pct']:.1f} percent confirmation rate."],
+                ["Interpretation", "Failed outcomes remain part of the denominator, preventing the confirmation rate from being overstated."],
+            ],
+        },
+        {
+            "title": "Revenue and average order value experiment",
+            "paragraphs": [
+                "Revenue is calculated only from confirmed synthetic orders. Average order value uses confirmed revenue divided by confirmed order count. This definition avoids treating a failed payment or unavailable order as recognised revenue.",
+            ],
+            "figure": FIGURES / "03_retail_kpis.png",
+            "caption": "Figure 5. Confirmed revenue and average order value from the reproducible KPI workflow.",
+            "explanation": [
+                ["Test question", "Do the revenue measures respect the same confirmation rule used in the order funnel?"],
+                ["Observed result", f"Confirmed revenue is INR {kpis['confirmed_revenue_inr']:,} and average order value is INR {kpis['average_order_value_inr']:,.2f}."],
+                ["Interpretation", f"Delhi is the highest revenue city and Electronics is the highest revenue category in this declared synthetic fixture."],
+            ],
+        },
+        {
+            "title": "Automated verification experiment",
+            "paragraphs": [
+                "The test strategy is divided by responsibility. TypeScript tests cover pricing, delivery fees, assistant intent, order lookup, stock outcomes and the hosted contract. JUnit tests cover Java success, rejection, reservation release and milestones. Pytest covers recommendation ranking, validation and API behaviour.",
+            ],
+            "figure": FIGURES / "02_test_suites.png",
+            "caption": "Figure 6. Passing automated tests across TypeScript, Java and Python.",
+            "explanation": [
+                ["Test question", "Are the critical rules checked in the runtime that owns them?"],
+                ["Observed result", "Fifteen TypeScript tests, four Java tests and four Python tests pass, giving 23 automated tests in total."],
+                ["Interpretation", "The suite checks both successful results and the side effects that must not occur after failure."],
+            ],
+        },
+        {
+            "title": "Application scale and build verification",
+            "paragraphs": [
+                "The catalogue and route counts are build contract checks rather than business success metrics. They confirm that repeated product pages are generated and that the application contains the intended navigation and service routes without inflating the dataset for appearance.",
+            ],
+            "figure": FIGURES / "07_application_scale.png",
+            "caption": "Figure 7. Product, category and generated page counts in the production build.",
+            "explanation": [
+                ["Test question", "Does the build preserve the declared catalogue and generated page scope?"],
+                ["Observed result", "The verified build contains 50 products, five categories and 62 generated or dynamic pages."],
+                ["Interpretation", "The scope exercises reusable product and route behaviour while remaining understandable as a student project."],
+            ],
+        },
+        {
+            "title": "Interface verification evidence",
+            "paragraphs": [
+                "Browser evidence checks whether the implemented business rules remain understandable at the customer interface. The checkout capture shows the Indian delivery fields, three payment choices and explicit success and failure controls. Separate repository captures document the storefront, product recommendations, profile, recent orders and unavailable product state.",
             ],
             "figure": SCREENSHOTS / "04_checkout.jpg",
-            "caption": "Figure 6. Checkout test capture showing address, payment method, and demonstration outcome controls.",
+            "caption": "Figure 8. Checkout evidence with address, payment method and reproducible outcome controls.",
             "explanation": [
-                [
-                    "What I tested",
-                    "Whether a shopper can proceed from a populated cart through validated Indian address and payment fields.",
-                ],
-                [
-                    "What the image shows",
-                    "The checkout keeps customer, delivery, payment, and outcome choices in one understandable sequence.",
-                ],
-                [
-                    "Conclusion",
-                    "The interface supports repeatable success and failure testing without processing a real payment.",
-                ],
+                ["Test question", "Can a reviewer reproduce each order branch without entering real payment information?"],
+                ["Observed result", "The form collects only demonstration address data, labels the payment as simulated and provides successful, declined and unavailable outcomes."],
+                ["Interpretation", "The control is intentionally visible because it makes success and safe failure evidence repeatable in a public project."],
             ],
         },
         {
-            "title": "Results, deployment and limitations",
+            "title": "Failure analysis",
             "paragraphs": [
-                "The verified build covers search, category discovery, product options, cart totals, free-delivery logic, successful payment, declined payment, unavailable stock, delivery estimates, recent orders, and website-only customer support. The public interface is deployed on Vercel.",
-                "Personal cart, order, and inventory state is browser-local. External Java and Python service deployment is optional, and hosted adapters expose which runtime handled the request. The project does not provide real identity, shared stock, fraud detection, courier events, payment settlement, or production security.",
+                "The most important negative test is not the message shown after failure; it is the absence of an unsafe side effect. For out of stock, payment must remain unattempted. For payment failure, the temporary stock hold must be released and delivery must remain uncreated. For an unavailable conversational model, product and order support must continue through bounded local rules.",
+                "The implementation records each failed attempt in order history. This choice makes the path reviewable and gives the assistant an exact status to report. It also avoids the misleading behavior of redirecting the customer back to the catalogue without explaining what happened.",
+            ],
+            "table": [
+                ["Failure", "Required safe behavior", "Evidence"],
+                ["Quantity unavailable", "Reject reservation and skip payment", "Rejected snapshot, stopped timeline and failed trace"],
+                ["Payment declined", "Release reservation and create no shipment", "Released snapshot and stopped delivery stages"],
+                ["Ollama unavailable", "Use bounded website support", "Fallback intent tests and verified catalogue actions"],
+                ["Unknown order number", "Do not invent a status", "Exact order lookup response"],
+            ],
+        },
+        {
+            "title": "Limitations and responsible interpretation",
+            "paragraphs": [
+                "All products, ratings, payments, customers, inventory quantities, orders and courier events are synthetic. Browser storage is personal to one visitor and is not shared warehouse inventory. The public Vercel deployment may use hosted TypeScript adapters rather than the local Java and Python services.",
+                "The project does not contain production authentication, database transactions, payment settlement, fraud detection, reservation expiry, courier webhooks, returns processing or operational monitoring. The assistant is limited to website support and must not be interpreted as a general purpose shopping or financial adviser.",
+                "These boundaries do not weaken the project result. They identify exactly what was tested: a coherent student scale demonstration of contracts, state transitions, orchestration and customer explanation.",
+                "The analytical measures also require careful interpretation. Twelve rows are sufficient to verify formulas and reporting structure, but they are not evidence of real market demand, city performance or commercial revenue. The values are reported only as outcomes of the declared synthetic fixture.",
+                "Security testing is limited to server only handling of the optional model key, validated order input and the absence of real payment credentials. Production review would also require dependency scanning, rate limiting, access control, audit logs, privacy assessment and incident response procedures.",
             ],
         },
         {
             "title": "Reproducibility and future work",
             "paragraphs": [
-                "The repository includes frontend, Java and Python source, Docker Compose, API contracts, synthetic raw data, KPI outputs, twenty-three automated tests, browser evidence, five evaluation figures, and this report. The complete local stack can be rebuilt without a private production database.",
-                "A future version should add authentication, a shared database, idempotent order storage, payment webhooks, inventory transactions, service tracing, and deployment of the real Java and Python services. Those additions should follow only after the current deterministic contracts remain covered by tests.",
+                "The repository contains the Next.js application, Java and Python services, Docker files, API contracts, synthetic source data, KPI output, 23 automated tests, browser captures, seven generated experiment figures and this report. A reviewer can run each language suite independently or start the combined local stack with Docker Compose.",
+                "The next stage would add a shared relational database, authenticated accounts, idempotent order creation, expiring reservations, payment webhooks, a courier event simulator and end to end service tracing. Those features should be added only with new contract and failure tests, because additional components would otherwise reintroduce the disconnected state problem this project addresses.",
+                "Reproduction begins with the automated suites because they establish the business contract before a visual review. The production Next.js build then verifies the generated routes and TypeScript types. Java and Python can be run separately, which allows a reviewer to inspect the order and recommendation services without requiring the optional conversational model.",
+                "Generated reports and figures are treated as outputs rather than hidden manual calculations. The KPI JSON is read directly by the report builder, and the figure scripts declare the test counts and scenario states they visualise. This keeps the written result consistent with the repository evidence.",
             ],
         },
         {
             "title": "Conclusion",
             "paragraphs": [
-                "Sunshine demonstrates a complete student retail journey rather than only a storefront screen. The strongest evidence is the connection between UI behaviour, Java failure handling, Python ranking, measurable KPIs, and automated tests. The project remains honest about its boundaries: it is a safe synthetic platform for demonstrating engineering choices, not a production marketplace."
+                "Sunshine demonstrates a connected retail order rather than only an ecommerce interface. The strongest result is the agreement between the customer milestone, inventory snapshot, internal agent trace and automated tests for all three checkout branches.",
+                "The project also connects Java orchestration, Python recommendations and analytics, Next.js customer interaction and bounded conversational support without presenting synthetic behavior as production commerce. This combination makes the implementation explainable, reproducible and appropriate for a final year student portfolio.",
+                "The implementation shows several distinct skills through one coherent problem: frontend state management, typed API design, Java responsibility boundaries, Python ranking and analysis, language model guardrails, failure testing and technical communication. Each skill is supported by a file, test, figure or customer flow that a reviewer can inspect.",
+                "Most importantly, the project treats failed payment and unavailable stock as first class outcomes. Correct recovery is part of the product, not an error message added after the successful path. That design decision is what turns the demonstration into a complete order lifecycle study.",
+                "For the confirmed branch, the evidence can be followed from the checkout request to the final screen. The requested quantity is available, a reservation is created, risk rules pass, payment is approved, the quantity is committed, picking becomes current and the remaining delivery stages are scheduled. The same order is saved for profile lookup and conversational support.",
+                "For the declined branch, the evidence follows a different path. The quantity is initially reserved, payment fails, the held units return to availability and neither fulfilment nor delivery is created. The cart remains available for another attempt. For the unavailable branch, reservation fails before risk or payment, which proves that the project avoids charging for a quantity it cannot supply.",
+                "The recommendation and analytics parts support the order lifecycle without replacing it. Recommendations resolve only to declared catalogue records, while the KPI workflow counts failed outcomes in the order funnel and excludes them from revenue. Both choices preserve the same principle: derived information must agree with the underlying commerce state.",
+                "My final assessment is that Sunshine meets its declared purpose. It does not solve production retail operations, but it does provide a complete and testable explanation of how a customer request becomes a confirmed, failed or rejected order. The combination of customer evidence and technical evidence is the main result of the work.",
             ],
         },
     ]
@@ -178,10 +225,10 @@ def build_report() -> Path:
         "Sunshine Retail Platform",
         "Divya Rachala",
         [
-            "This report documents a full-stack retail project that connects a fifty-product Next.js storefront with Java order processing, Python recommendations, conversational customer support, and reproducible retail analytics. The application covers discovery, cart, checkout, payment outcomes, stock exhaustion, delivery estimates, account views, and recent orders.",
-            "Twenty-three automated tests pass across TypeScript, Java, and Python. A synthetic order dataset produces a 75.0 percent confirmation rate, INR 37,136 in confirmed revenue, and INR 4,126.22 average order value. Five experiments examine order outcomes, test coverage, KPI calculations, workflow failures, and application scale.",
+            "This report documents an Indian retail project that connects a 50 product Next.js storefront with Java order orchestration, Python recommendations, conversational customer support and reproducible retail analytics. The system covers discovery, cart, checkout, inventory reservation, payment success and failure, fulfilment, an eight stage delivery timeline, profile and recent orders.",
+            "The implementation verifies three inventory outcomes: committed after successful payment, released after payment failure and rejected when quantity is unavailable. Twenty three automated tests pass across TypeScript, Java and Python. A declared 12 row synthetic analytics fixture produces a 75.0 percent confirmation rate, INR 37,136 in confirmed revenue and INR 4,126.22 average order value.",
         ],
-        "retail platform; Next.js; Java; Python; order workflow; conversational support; testing",
+        "retail platform; inventory reservation; multi agent orchestration; delivery tracking; Next.js; Java; Python; testing",
         sections,
     )
 

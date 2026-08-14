@@ -9,7 +9,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
     Image,
-    PageBreak,
+    KeepTogether,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -49,6 +49,7 @@ def build_research_report(
             textColor=colors.black,
             spaceBefore=4,
             spaceAfter=9,
+            keepWithNext=True,
         )
     )
     styles.add(
@@ -56,8 +57,8 @@ def build_research_report(
             name="ResearchBody",
             parent=styles["BodyText"],
             fontName="Times-Roman",
-            fontSize=10.5,
-            leading=15,
+            fontSize=10.2,
+            leading=14.2,
             textColor=colors.black,
             alignment=TA_JUSTIFY,
             spaceAfter=8,
@@ -105,13 +106,13 @@ def build_research_report(
         pagesize=A4,
         leftMargin=22 * mm,
         rightMargin=22 * mm,
-        topMargin=20 * mm,
-        bottomMargin=22 * mm,
+        topMargin=18 * mm,
+        bottomMargin=20 * mm,
         title=title,
         author=author,
     )
     story = [
-        Spacer(1, 18 * mm),
+        Spacer(1, 4 * mm),
         Paragraph(title, styles["ResearchTitle"]),
         Paragraph(
             "Project Report",
@@ -122,14 +123,14 @@ def build_research_report(
                 fontSize=12,
             ),
         ),
-        Spacer(1, 10 * mm),
+        Spacer(1, 4 * mm),
         Paragraph(
             f"Prepared by: {author}",
             ParagraphStyle(
                 name="Author", parent=styles["ResearchBody"], alignment=TA_CENTER
             ),
         ),
-        Spacer(1, 14 * mm),
+        Spacer(1, 5 * mm),
         Paragraph("Abstract", styles["ResearchHeading"]),
     ]
     story.extend(Paragraph(text, styles["ResearchBody"]) for text in abstract)
@@ -137,13 +138,13 @@ def build_research_report(
         [
             Spacer(1, 4 * mm),
             Paragraph(f"<b>Keywords:</b> {keywords}", styles["ResearchBody"]),
-            Spacer(1, 8 * mm),
+            Spacer(1, 3 * mm),
             Paragraph("Report structure", styles["ResearchHeading"]),
             Paragraph(
-                "The report presents the problem, source data, preparation method, evaluation design, five evidence-based experiments, limitations, reproducibility details, and conclusion.",
+                "The report presents the problem, project scope, customer journey, system design, inventory and delivery controls, evaluation evidence, limitations, reproducibility details, and conclusion.",
                 styles["ResearchBody"],
             ),
-            PageBreak(),
+            Spacer(1, 3 * mm),
         ]
     )
 
@@ -181,21 +182,21 @@ def build_research_report(
             story.extend([Spacer(1, 3 * mm), table])
         if section.get("figure"):
             image = Image(str(section["figure"]))
-            image._restrictSize(164 * mm, 92 * mm)
+            image._restrictSize(164 * mm, 82 * mm)
             image.hAlign = "CENTER"
-            story.extend(
-                [
-                    Spacer(1, 3 * mm),
+            story.extend([
+                Spacer(1, 3 * mm),
+                KeepTogether([
                     image,
                     Paragraph(section["caption"], styles["FigureCaption"]),
-                ]
-            )
+                ]),
+            ])
             for label, text in section.get("explanation", []):
                 story.append(
                     Paragraph(f"<b>{label}:</b> {text}", styles["ResearchBody"])
                 )
         if index < len(sections):
-            story.append(PageBreak())
+            story.append(Spacer(1, 4 * mm))
 
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     return output

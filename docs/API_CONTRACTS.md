@@ -102,11 +102,31 @@ Example response:
   "createdAt": "2026-08-13T17:00:00Z",
   "items": [],
   "message": "Your order is confirmed and is being prepared for dispatch.",
+  "inventoryDisposition": "COMMITTED",
+  "inventory": [
+    {
+      "productId": "WO-001",
+      "name": "Aarohi Floral Kurta Set",
+      "requested": 1,
+      "availableBefore": 18,
+      "reserved": 1,
+      "availableAfter": 17
+    }
+  ],
+  "milestones": [
+    {
+      "code": "ORDER_RECEIVED",
+      "label": "Order received",
+      "state": "COMPLETED",
+      "message": "The order details were validated and recorded.",
+      "occurredAt": "2026-08-13T17:00:00Z"
+    }
+  ],
   "trace": []
 }
 ```
 
-The internal `trace` records bounded service steps. The customer order page converts this data into a simple progress view.
+`inventoryDisposition` is `COMMITTED`, `RELEASED` or `REJECTED`. Each response carries the quantity before checkout, the temporary hold and the final availability. `milestones` contains the eight customer stages and uses `COMPLETED`, `CURRENT`, `UPCOMING` or `STOPPED` state. The internal `trace` records bounded service steps, but agent names are not shown in normal shopping navigation.
 
 When Spring Boot handles the request, the response contains `x-sunshine-service: java`. The hosted adapter uses `x-sunshine-service: vercel-adapter`.
 

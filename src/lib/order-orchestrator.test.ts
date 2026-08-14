@@ -25,8 +25,12 @@ describe("Vercel order adapter", () => {
       "completed",
       "completed",
       "completed",
+      "completed",
     ]);
     expect(result.deliveryStatus).toBe("PROCESSING");
+    expect(result.inventoryDisposition).toBe("COMMITTED");
+    expect(result.inventory[0]).toMatchObject({ availableBefore: 1, reserved: 1, availableAfter: 0 });
+    expect(result.milestones.find((stage) => stage.code === "PICKING")?.state).toBe("CURRENT");
     expect(result.items[0].slug).toBe("anvi-aarohi-floral-kurta-set");
   });
 
@@ -38,8 +42,12 @@ describe("Vercel order adapter", () => {
       "completed",
       "failed",
       "skipped",
+      "skipped",
       "completed",
     ]);
+    expect(result.inventoryDisposition).toBe("RELEASED");
+    expect(result.inventory[0].availableAfter).toBe(1);
+    expect(result.milestones.find((stage) => stage.code === "PAYMENT_APPROVED")?.state).toBe("STOPPED");
   });
 
   it("stops before payment when stock is unavailable", () => {
@@ -50,8 +58,11 @@ describe("Vercel order adapter", () => {
       "skipped",
       "skipped",
       "skipped",
+      "skipped",
       "completed",
     ]);
+    expect(result.inventoryDisposition).toBe("REJECTED");
+    expect(result.inventory[0].reserved).toBe(0);
   });
 
   it("uses available inventory rather than trusting a success scenario", () => {

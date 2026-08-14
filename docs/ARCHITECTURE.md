@@ -48,15 +48,30 @@ If Ollama is not configured, exceeds its limit or returns an unusable response, 
 
 The Java service uses a deterministic multi agent workflow coordinated by `OrderOrchestrator`. Each agent owns one business responsibility and returns a typed result to the orchestrator.
 
-1. Catalogue Agent checks availability and reserves inventory.
-2. Risk Agent evaluates deterministic order rules.
+1. Catalogue Agent checks availability and creates the temporary inventory reservation.
+2. Risk Agent evaluates deterministic address and order rules.
 3. Payment Agent handles the selected simulated method.
-4. Fulfilment Agent calculates the delivery result.
-5. Notification Agent creates the final order history update.
+4. Fulfilment Agent plans picking and packing.
+5. Delivery Agent creates the eight customer milestones through delivery.
+6. Notification Agent creates the final order history update.
 
 The agents are ordinary bounded Java components rather than language model powered agents. This provides a small, understandable orchestration example without overstating the implementation.
 
-The customer interface converts the internal trace into three understandable progress areas: items checked, payment reviewed and delivery update.
+### 5.1 Inventory state transitions
+
+The orchestrator returns an inventory disposition and a per item before, held and after snapshot.
+
+| Branch | Transition | Payment | Delivery |
+| --- | --- | --- | --- |
+| Confirmed | Available to reserved to committed | Approved | Eight milestones created |
+| Payment failed | Available to reserved to released | Declined | No shipment created |
+| Out of stock | Available to rejected | Not attempted | No shipment created |
+
+The browser commits the returned stock value only for a confirmed order. The failed payment branch restores the earlier availability, while the stock conflict branch marks the affected product unavailable for the current browser demonstration.
+
+### 5.2 Customer delivery timeline
+
+The customer interface converts the internal trace into eight familiar stages: order received, items reserved, payment confirmed, picking, packed, shipped, out for delivery and delivered. Completed, current, upcoming and stopped states use the same typed contract in Java and the hosted TypeScript adapter. Internal agent names remain in technical evidence only.
 
 ## 6. Deployment
 
@@ -78,6 +93,7 @@ The product catalogue and public demonstration orders are static synthetic data.
 1. Shopping cart
 2. Personal demonstration orders
 3. Per browser inventory changes
+4. Personal order timelines and inventory outcomes
 
 This design keeps the public project safe and reproducible. It is not presented as shared warehouse inventory or production customer persistence.
 

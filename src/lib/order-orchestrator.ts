@@ -1,4 +1,5 @@
 import { getDeliveryFee } from "@/lib/format";
+import { inventoryLines, stoppedMilestones, successfulMilestones } from "@/lib/order-lifecycle";
 import type { AgentStep, OrderRequest, OrderResponse } from "@/types/commerce";
 
 const makeReference = (prefix: string) => {
@@ -26,13 +27,14 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
   const total = subtotal + deliveryFee;
   const trace: AgentStep[] = [];
   const orderId = makeReference("SUN");
+  const createdAt = new Date().toISOString();
   const baseOrder = {
     orderId,
     total,
     deliveryFee,
     paymentMethod: request.paymentMethod,
     destinationCity: request.customer.city,
-    createdAt: new Date().toISOString(),
+    createdAt,
     items: request.items,
   };
 
@@ -47,6 +49,7 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
     trace.push({ agent: "Risk Agent", status: "skipped", message: "Order risk rules were not required.", durationMs: 0 });
     trace.push({ agent: "Payment Agent", status: "skipped", message: "Payment was not attempted.", durationMs: 0 });
     trace.push({ agent: "Fulfilment Agent", status: "skipped", message: "Delivery planning was not required.", durationMs: 0 });
+    trace.push({ agent: "Delivery Agent", status: "skipped", message: "No delivery journey was created.", durationMs: 0 });
     trace.push({ agent: "Notification Agent", status: "completed", message: "A stock alert was added to the customer order history.", durationMs: 72 });
 
     return {
@@ -56,6 +59,9 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       paymentReference: null,
       deliveryStatus: "NOT_CREATED",
       message: "The order was stopped before payment because an item is out of stock.",
+      inventoryDisposition: "REJECTED",
+      inventory: inventoryLines(request.items, "REJECTED"),
+      milestones: stoppedMilestones(createdAt, "OUT_OF_STOCK"),
       trace,
     };
   }
@@ -87,6 +93,12 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       durationMs: 0,
     });
     trace.push({
+      agent: "Delivery Agent",
+      status: "skipped",
+      message: "No delivery journey was created.",
+      durationMs: 0,
+    });
+    trace.push({
       agent: "Notification Agent",
       status: "completed",
       message: "A payment-failure update was added to recent orders.",
@@ -100,6 +112,9 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       paymentReference: null,
       deliveryStatus: "NOT_CREATED",
       message: "Payment could not be authorised. No money was charged.",
+      inventoryDisposition: "RELEASED",
+      inventory: inventoryLines(request.items, "RELEASED"),
+      milestones: stoppedMilestones(createdAt, "PAYMENT_FAILED"),
       trace,
     };
   }
@@ -117,8 +132,14 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
   trace.push({
     agent: "Fulfilment Agent",
     status: "completed",
-    message: `Shipment planned for ${request.customer.city} ${request.customer.pincode}.`,
+    message: `Picking and packing planned for ${request.items.length} item type${request.items.length === 1 ? "" : "s"}.`,
     durationMs: 164,
+  });
+  trace.push({
+    agent: "Delivery Agent",
+    status: "completed",
+    message: `Delivery milestones scheduled for ${request.customer.city} ${request.customer.pincode}.`,
+    durationMs: 131,
   });
   trace.push({
     agent: "Notification Agent",
@@ -134,6 +155,9 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
     paymentReference,
     deliveryStatus: "PROCESSING",
     message: "Your order is confirmed and is being prepared for dispatch.",
+    inventoryDisposition: "COMMITTED",
+    inventory: inventoryLines(request.items, "COMMITTED"),
+    milestones: successfulMilestones(createdAt, "PROCESSING"),
     trace,
   };
 }

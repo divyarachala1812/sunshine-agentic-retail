@@ -1,15 +1,64 @@
-import type { AgentStep, OrderResponse } from "@/types/commerce";
+import { inventoryLines, stoppedMilestones, successfulMilestones } from "@/lib/order-lifecycle";
+import type { AgentStep, OrderRequest, OrderResponse } from "@/types/commerce";
 
-const completedTrace = (city: string): AgentStep[] => [
+const completedTrace = (city: string, paymentMessage = "UPI payment authorised securely."): AgentStep[] => [
   { agent: "Catalogue Agent", status: "completed", message: "Inventory checked and reserved.", durationMs: 121 },
   { agent: "Risk Agent", status: "completed", message: "Address and order rules passed the demo risk check.", durationMs: 91 },
-  { agent: "Payment Agent", status: "completed", message: "UPI payment authorised securely.", durationMs: 238 },
-  { agent: "Fulfilment Agent", status: "completed", message: `Shipment planned for ${city}.`, durationMs: 159 },
+  { agent: "Payment Agent", status: "completed", message: paymentMessage, durationMs: 238 },
+  { agent: "Fulfilment Agent", status: "completed", message: "Picking and packing were coordinated.", durationMs: 159 },
+  { agent: "Delivery Agent", status: "completed", message: `Delivery milestones were scheduled for ${city}.`, durationMs: 134 },
   { agent: "Notification Agent", status: "completed", message: "Tracking details were added to recent orders.", durationMs: 73 },
 ];
 
+const item = (
+  productId: string,
+  slug: string,
+  name: string,
+  price: number,
+  availableStock: number,
+  selectedSize?: string,
+): OrderRequest["items"][number] => ({
+  productId,
+  slug,
+  name,
+  price,
+  quantity: 1,
+  availableStock,
+  ...(selectedSize ? { selectedSize } : {}),
+});
+
+const confirmedOrder = (
+  order: Omit<OrderResponse, "inventoryDisposition" | "inventory" | "milestones" | "trace">,
+  paymentMessage?: string,
+): OrderResponse => ({
+  ...order,
+  inventoryDisposition: "COMMITTED",
+  inventory: inventoryLines(order.items, "COMMITTED"),
+  milestones: successfulMilestones(
+    order.createdAt,
+    order.deliveryStatus as Exclude<OrderResponse["deliveryStatus"], "NOT_CREATED">,
+  ),
+  trace: completedTrace(`${order.destinationCity} 500081`, paymentMessage),
+});
+
+const failedPaymentItem = item(
+  "EL-001",
+  "astra-nova-5g-smartphone",
+  "Nova 5G Smartphone",
+  18999,
+  17,
+);
+const unavailableItem = item(
+  "WO-009",
+  "vastra-diya-silk-blend-lehenga",
+  "Diya Silk Blend Lehenga",
+  3599,
+  0,
+  "M",
+);
+
 export const demoOrders: OrderResponse[] = [
-  {
+  confirmedOrder({
     orderId: "SUN-DEMO-2408",
     status: "CONFIRMED",
     total: 2499,
@@ -20,11 +69,10 @@ export const demoOrders: OrderResponse[] = [
     deliveryStatus: "OUT_FOR_DELIVERY",
     destinationCity: "Hyderabad",
     createdAt: "2026-08-11T10:20:00.000Z",
-    items: [{ productId: "EL-003", slug: "sonic-pulse-anc-earbuds", name: "Pulse ANC Earbuds", price: 2499, quantity: 1, availableStock: 42 }],
+    items: [item("EL-003", "sonic-pulse-anc-earbuds", "Pulse ANC Earbuds", 2499, 42)],
     message: "Your parcel is with the delivery partner and arriving today.",
-    trace: completedTrace("Hyderabad 500081"),
-  },
-  {
+  }),
+  confirmedOrder({
     orderId: "SUN-DEMO-1908",
     status: "CONFIRMED",
     total: 1999,
@@ -35,11 +83,10 @@ export const demoOrders: OrderResponse[] = [
     deliveryStatus: "SHIPPED",
     destinationCity: "Hyderabad",
     createdAt: "2026-08-09T07:45:00.000Z",
-    items: [{ productId: "HO-004", slug: "nivasa-cloud-comforter", name: "Cloud Comforter", price: 1999, quantity: 1, availableStock: 14 }],
+    items: [item("HO-004", "nivasa-cloud-comforter", "Cloud Comforter", 1999, 14)],
     message: "Your order has left the fulfilment centre and is moving to Hyderabad.",
-    trace: completedTrace("Hyderabad 500081").map((step) => step.agent === "Payment Agent" ? { ...step, message: "Cash on delivery eligibility confirmed." } : step),
-  },
-  {
+  }, "Cash on delivery eligibility confirmed."),
+  confirmedOrder({
     orderId: "SUN-DEMO-1408",
     status: "CONFIRMED",
     total: 1499,
@@ -50,10 +97,9 @@ export const demoOrders: OrderResponse[] = [
     deliveryStatus: "DELIVERED",
     destinationCity: "Hyderabad",
     createdAt: "2026-08-03T13:10:00.000Z",
-    items: [{ productId: "FO-004", slug: "carryco-metro-laptop-backpack", name: "Metro Laptop Backpack", price: 1499, quantity: 1, availableStock: 29 }],
+    items: [item("FO-004", "carryco-metro-laptop-backpack", "Metro Laptop Backpack", 1499, 29)],
     message: "Delivered successfully. Thank you for shopping with Sunshine.",
-    trace: completedTrace("Hyderabad 500081"),
-  },
+  }),
   {
     orderId: "SUN-DEMO-0908",
     status: "PAYMENT_FAILED",
@@ -65,13 +111,17 @@ export const demoOrders: OrderResponse[] = [
     deliveryStatus: "NOT_CREATED",
     destinationCity: "Hyderabad",
     createdAt: "2026-08-02T09:30:00.000Z",
-    items: [{ productId: "EL-001", slug: "astra-nova-5g-smartphone", name: "Nova 5G Smartphone", price: 18999, quantity: 1, availableStock: 17 }],
+    items: [failedPaymentItem],
     message: "Payment could not be authorised. No money was charged.",
+    inventoryDisposition: "RELEASED",
+    inventory: inventoryLines([failedPaymentItem], "RELEASED"),
+    milestones: stoppedMilestones("2026-08-02T09:30:00.000Z", "PAYMENT_FAILED"),
     trace: [
       { agent: "Catalogue Agent", status: "completed", message: "Inventory checked and reserved.", durationMs: 124 },
       { agent: "Risk Agent", status: "completed", message: "Order rules passed the demo risk check.", durationMs: 94 },
       { agent: "Payment Agent", status: "failed", message: "Card authorisation was declined.", durationMs: 281 },
       { agent: "Fulfilment Agent", status: "skipped", message: "Reservation released; no shipment was created.", durationMs: 0 },
+      { agent: "Delivery Agent", status: "skipped", message: "No delivery journey was created.", durationMs: 0 },
       { agent: "Notification Agent", status: "completed", message: "Payment failure was recorded in recent orders.", durationMs: 67 },
     ],
   },
@@ -86,13 +136,17 @@ export const demoOrders: OrderResponse[] = [
     deliveryStatus: "NOT_CREATED",
     destinationCity: "Hyderabad",
     createdAt: "2026-08-01T12:00:00.000Z",
-    items: [{ productId: "WO-009", slug: "vastra-diya-silk-blend-lehenga", name: "Diya Silk-Blend Lehenga", price: 3599, quantity: 1, selectedSize: "M", availableStock: 0 }],
+    items: [unavailableItem],
     message: "The last unit was purchased before inventory could be reserved.",
+    inventoryDisposition: "REJECTED",
+    inventory: inventoryLines([unavailableItem], "REJECTED"),
+    milestones: stoppedMilestones("2026-08-01T12:00:00.000Z", "OUT_OF_STOCK"),
     trace: [
-      { agent: "Catalogue Agent", status: "failed", message: "Diya Silk-Blend Lehenga became unavailable before reservation.", durationMs: 117 },
+      { agent: "Catalogue Agent", status: "failed", message: "Diya Silk Blend Lehenga became unavailable before reservation.", durationMs: 117 },
       { agent: "Risk Agent", status: "skipped", message: "Order risk rules were not required.", durationMs: 0 },
       { agent: "Payment Agent", status: "skipped", message: "Payment was not attempted.", durationMs: 0 },
       { agent: "Fulfilment Agent", status: "skipped", message: "Delivery planning was not required.", durationMs: 0 },
+      { agent: "Delivery Agent", status: "skipped", message: "No delivery journey was created.", durationMs: 0 },
       { agent: "Notification Agent", status: "completed", message: "Stock alert was recorded in recent orders.", durationMs: 71 },
     ],
   },

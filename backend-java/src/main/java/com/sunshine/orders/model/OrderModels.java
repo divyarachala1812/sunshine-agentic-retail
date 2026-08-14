@@ -42,6 +42,21 @@ public final class OrderModels {
 
     public enum DeliveryStatus { PROCESSING, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, NOT_CREATED }
 
+    public enum InventoryDisposition { COMMITTED, RELEASED, REJECTED }
+
+    public enum MilestoneState { COMPLETED, CURRENT, UPCOMING, STOPPED }
+
+    public enum MilestoneCode {
+        ORDER_RECEIVED,
+        INVENTORY_RESERVED,
+        PAYMENT_APPROVED,
+        PICKING,
+        PACKED,
+        SHIPPED,
+        OUT_FOR_DELIVERY,
+        DELIVERED
+    }
+
     public enum StepStatus { completed, failed, skipped }
 
     public record OrderRequest(
@@ -60,6 +75,25 @@ public final class OrderModels {
     ) {
     }
 
+    public record InventoryLine(
+            String productId,
+            String name,
+            int requested,
+            int availableBefore,
+            int reserved,
+            int availableAfter
+    ) {
+    }
+
+    public record OrderMilestone(
+            MilestoneCode code,
+            String label,
+            MilestoneState state,
+            String message,
+            Instant occurredAt
+    ) {
+    }
+
     public record OrderResponse(
             String orderId,
             OrderStatus status,
@@ -73,6 +107,9 @@ public final class OrderModels {
             Instant createdAt,
             List<OrderItem> items,
             String message,
+            InventoryDisposition inventoryDisposition,
+            List<InventoryLine> inventory,
+            List<OrderMilestone> milestones,
             List<AgentStep> trace
     ) {
     }

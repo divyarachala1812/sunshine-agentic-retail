@@ -16,8 +16,8 @@ type CommerceContextValue = {
 };
 
 const CommerceContext = createContext<CommerceContextValue | null>(null);
-const ORDER_KEY = "sunshine-orders-v2";
-const STOCK_KEY = "sunshine-stock-v1";
+const ORDER_KEY = "sunshine-orders-v3";
+const STOCK_KEY = "sunshine-stock-v2";
 const ORDER_EVENT = "sunshine-orders-change";
 const STOCK_EVENT = "sunshine-stock-change";
 const EMPTY_ORDERS: OrderResponse[] = [];

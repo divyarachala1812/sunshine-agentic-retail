@@ -1,11 +1,15 @@
 package com.sunshine.orders.service;
 
 import com.sunshine.orders.agent.CatalogueAgent;
+import com.sunshine.orders.agent.DeliveryAgent;
 import com.sunshine.orders.agent.FulfilmentAgent;
 import com.sunshine.orders.agent.PaymentAgent;
 import com.sunshine.orders.agent.RiskAgent;
 import com.sunshine.orders.agent.NotificationAgent;
 import com.sunshine.orders.model.OrderModels.Customer;
+import com.sunshine.orders.model.OrderModels.InventoryDisposition;
+import com.sunshine.orders.model.OrderModels.MilestoneCode;
+import com.sunshine.orders.model.OrderModels.MilestoneState;
 import com.sunshine.orders.model.OrderModels.OrderItem;
 import com.sunshine.orders.model.OrderModels.OrderRequest;
 import com.sunshine.orders.model.OrderModels.OrderScenario;
@@ -29,6 +33,7 @@ class OrderOrchestratorTest {
                 new PaymentAgent(),
                 new FulfilmentAgent(),
                 new RiskAgent(),
+                new DeliveryAgent(),
                 new NotificationAgent()
         );
     }
@@ -38,10 +43,15 @@ class OrderOrchestratorTest {
         var result = orchestrator.process(request(OrderScenario.SUCCESS));
 
         assertThat(result.status()).isEqualTo(OrderStatus.CONFIRMED);
-        assertThat(result.trace()).hasSize(5).allMatch(step -> step.status() == StepStatus.completed);
+        assertThat(result.trace()).hasSize(6).allMatch(step -> step.status() == StepStatus.completed);
         assertThat(result.total()).isEqualTo(1499);
         assertThat(result.deliveryFee()).isZero();
         assertThat(result.paymentReference()).startsWith("UPI-");
+        assertThat(result.inventoryDisposition()).isEqualTo(InventoryDisposition.COMMITTED);
+        assertThat(result.inventory().get(0).availableAfter()).isZero();
+        assertThat(result.milestones())
+                .filteredOn(stage -> stage.code() == MilestoneCode.PICKING)
+                .allMatch(stage -> stage.state() == MilestoneState.CURRENT);
     }
 
     @Test
@@ -52,6 +62,11 @@ class OrderOrchestratorTest {
         assertThat(result.trace().get(2).status()).isEqualTo(StepStatus.failed);
         assertThat(result.trace().get(3).status()).isEqualTo(StepStatus.skipped);
         assertThat(result.paymentReference()).isNull();
+        assertThat(result.inventoryDisposition()).isEqualTo(InventoryDisposition.RELEASED);
+        assertThat(result.inventory().get(0).availableAfter()).isEqualTo(1);
+        assertThat(result.milestones())
+                .filteredOn(stage -> stage.code() == MilestoneCode.PAYMENT_APPROVED)
+                .allMatch(stage -> stage.state() == MilestoneState.STOPPED);
     }
 
     @Test
@@ -63,7 +78,10 @@ class OrderOrchestratorTest {
         assertThat(result.trace().get(1).status()).isEqualTo(StepStatus.skipped);
         assertThat(result.trace().get(2).status()).isEqualTo(StepStatus.skipped);
         assertThat(result.trace().get(3).status()).isEqualTo(StepStatus.skipped);
-        assertThat(result.trace().get(4).status()).isEqualTo(StepStatus.completed);
+        assertThat(result.trace().get(4).status()).isEqualTo(StepStatus.skipped);
+        assertThat(result.trace().get(5).status()).isEqualTo(StepStatus.completed);
+        assertThat(result.inventoryDisposition()).isEqualTo(InventoryDisposition.REJECTED);
+        assertThat(result.inventory().get(0).reserved()).isZero();
     }
 
     @Test
@@ -79,7 +97,7 @@ class OrderOrchestratorTest {
 
         assertThat(result.status()).isEqualTo(OrderStatus.OUT_OF_STOCK);
         assertThat(result.trace().get(0).message()).contains("Book Air 14 Laptop");
-        assertThat(result.trace().get(4).status()).isEqualTo(StepStatus.completed);
+        assertThat(result.trace().get(5).status()).isEqualTo(StepStatus.completed);
     }
 
     private OrderRequest request(OrderScenario scenario) {

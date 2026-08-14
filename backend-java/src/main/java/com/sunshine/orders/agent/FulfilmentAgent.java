@@ -18,7 +18,7 @@ public class FulfilmentAgent {
         AgentStep step = new AgentStep(
                 "Fulfilment Agent",
                 StepStatus.completed,
-                "Shipment planned for " + customer.city() + " " + customer.pincode() + ".",
+                "Picking and packing were planned for the confirmed order.",
                 164
         );
         return new FulfilmentResult(step, date);

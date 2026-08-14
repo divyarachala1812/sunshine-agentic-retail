@@ -31,7 +31,8 @@ The application supports the following customer journey.
 5. Review the cart and continue to checkout.
 6. Enter an Indian delivery address and select UPI, card or cash on delivery.
 7. Complete a simulated order result.
-8. Review recent orders and delivery updates from the profile menu.
+8. Follow the order through received, reserved, paid, picking, packed, shipped, out for delivery and delivered milestones.
+9. Review recent orders and delivery updates from the profile menu.
 
 ## 2. Customer experience
 
@@ -69,9 +70,17 @@ Orders placed by a visitor are stored in that browser and appear before the publ
 
 ![Profile and recent orders](docs/screenshots/07_profile_and_recent_orders.jpg)
 
-### 2.3 Inventory behaviour
+### 2.3 Order journey and inventory behaviour
 
-The catalogue contains normal, low stock and unavailable products. A confirmed purchase reduces inventory in the current browser. When the final unit is purchased, the product becomes unavailable on the next visit. A failed payment does not reduce inventory.
+The catalogue contains normal, low stock and unavailable products. Checkout performs a final availability check before payment and records one of three inventory outcomes.
+
+| Checkout result | Inventory transition | Customer result |
+| --- | --- | --- |
+| Payment succeeds | Available to reserved to committed | Stock is reduced and an eight stage delivery journey is created |
+| Payment fails | Available to reserved to released | Stock returns to its earlier value and no shipment is created |
+| Quantity is unavailable | Available to rejected | Payment is not attempted and later stages are stopped |
+
+The order page shows all eight customer milestones and a clear before, held and after stock summary for each line item. A confirmed purchase reduces inventory in the current browser. When the final unit is purchased, the product becomes unavailable on the next visit.
 
 ![Unavailable product](docs/screenshots/08_unavailable_product.jpg)
 
@@ -104,17 +113,17 @@ More information is available in [architecture documentation](docs/ARCHITECTURE.
 
 ## 5. Order processing
 
-The Java order service demonstrates a student scale multi agent order workflow. Five deterministic agents have one responsibility each: catalogue, risk, payment, fulfilment and notification. An order orchestrator passes the result from one agent to the next and stops the workflow when a required step fails.
+The Java order service demonstrates a compact multi agent order workflow. Six deterministic agents have one responsibility each: catalogue and inventory, risk, payment, fulfilment, delivery and notification. `OrderOrchestrator` passes typed results from one agent to the next and stops later work when a required step fails.
 
 These agents do not use a language model. They are focused software components that make the sequence, failure rules and service boundaries easy to test. Divya is the separate customer facing AI assistant. This distinction keeps the project description accurate.
 
-The technical workflow remains in the source code and documentation. The customer interface only shows items checked, payment reviewed and delivery update.
+The technical workflow remains in the source code and documentation. The shopping interface translates those internal decisions into customer language and never exposes agent names in normal navigation.
 
 The order service supports three demonstration results.
 
-1. A successful order confirms payment eligibility, produces a delivery estimate and records the order.
-2. A declined payment releases the reserved item, creates no shipment and keeps the cart available.
-3. An unavailable item stops processing before payment and records an inventory update.
+1. A successful order commits the reserved quantity, produces a delivery estimate and creates an eight stage tracking timeline.
+2. A declined payment releases the reserved quantity, creates no shipment and keeps the cart available.
+3. An unavailable item rejects the reservation, stops before payment and records the failed attempt.
 
 ## 6. Product recommendations
 
@@ -198,11 +207,11 @@ cd backend-python
 PYTHONPATH=. pytest -q
 ```
 
-The automated checks cover pricing, delivery fees, conversational product discovery, order lookup, stock exhaustion, payment failure, recommendation ranking and request validation.
+The verified suite contains 23 tests: 15 TypeScript tests, 4 Java tests and 4 Python tests. The checks cover pricing, delivery fees, conversational product discovery, order lookup, stock exhaustion, inventory commit and release, payment failure, the eight stage delivery contract, recommendation ranking and request validation.
 
 ## 10. Data and limitations
 
-1. The catalogue, ratings, prices, orders and delivery updates are synthetic.
+1. The catalogue, ratings, prices, 12 row analytics fixture, orders and delivery updates are synthetic.
 2. The application does not process real payments.
 3. Personal orders, cart content and inventory changes use browser storage.
 4. There is no shared production customer database.
@@ -211,7 +220,7 @@ The automated checks cover pricing, delivery fees, conversational product discov
 
 ## 11. Project report
 
-The [research-style project report](output/pdf/Sunshine_Retail_Platform_Report.pdf) contains an abstract, project overview, architecture, testing method, five explained experiments, one interface test capture, limitations, reproducibility notes and conclusion.
+The [research style project report](output/pdf/Sunshine_Retail_Platform_Report.pdf) explains the problem, customer journey, multi agent sequence, inventory state transitions, delivery lifecycle, analytics results, test evidence, limitations, reproducibility and conclusion.
 
 ## 12. Author
 

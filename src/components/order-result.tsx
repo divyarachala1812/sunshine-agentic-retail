@@ -1,20 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { Check, CircleAlert, PackageCheck, RotateCcw, X } from "lucide-react";
+import { Check, CircleAlert, Clock3, PackageCheck, RotateCcw, X } from "lucide-react";
 import { useCommerce } from "@/components/commerce-provider";
 import { formatInr } from "@/lib/format";
-import type { OrderResponse } from "@/types/commerce";
+import type { OrderMilestone, OrderResponse } from "@/types/commerce";
+
+const inventoryMessage: Record<OrderResponse["inventoryDisposition"], string> = {
+  COMMITTED: "The reserved units were assigned to this confirmed order and deducted from available stock.",
+  RELEASED: "The temporary stock hold was released after payment failed. Available stock was not reduced.",
+  REJECTED: "No stock was reserved and payment was not attempted.",
+};
+
+function milestoneIcon(milestone: OrderMilestone) {
+  if (milestone.state === "COMPLETED") return <Check size={17} />;
+  if (milestone.state === "CURRENT") return <Clock3 size={17} />;
+  if (milestone.state === "STOPPED") return <X size={17} />;
+  return <span className="milestone-dot" />;
+}
+
+function eventTime(occurredAt: string | null) {
+  if (!occurredAt) return "Waiting";
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(occurredAt));
+}
 
 export function OrderResult({ orderId }: { orderId: string }) {
   const { findOrder } = useCommerce();
-  const order: OrderResponse | undefined = findOrder(orderId);
+  const order = findOrder(orderId);
 
   if (!order) {
     return (
       <section className="shell empty-cart compact-empty">
         <h1>Order details are not available.</h1>
-        <p>This order is not in the public examples or this browser’s order history.</p>
+        <p>This order is not in the public examples or this browser&apos;s order history.</p>
         <Link className="button button-primary" href="/profile">View recent orders</Link>
       </section>
     );
@@ -35,16 +58,41 @@ export function OrderResult({ orderId }: { orderId: string }) {
       </div>
 
       <div className="shell order-content customer-order-content">
-        <section className="order-progress-panel">
-          <div className="section-heading">
-            <div><span className="eyebrow">Order progress</span><h2>{confirmed ? "Your order is being prepared" : "We stopped the order safely"}</h2><p>{confirmed ? "We confirmed your items, payment and delivery details." : "No shipment was created. Review the explanation below before trying again."}</p></div>
-          </div>
-          <div className="customer-progress">
-            <div className={order.status === "OUT_OF_STOCK" ? "progress-problem" : "progress-complete"}><span>{order.status === "OUT_OF_STOCK" ? <X size={18} /> : <Check size={18} />}</span><div><strong>Items checked</strong><p>{order.status === "OUT_OF_STOCK" ? "One item was no longer available." : "Your selected items were available."}</p></div></div>
-            <div className={order.status === "PAYMENT_FAILED" ? "progress-problem" : order.status === "CONFIRMED" ? "progress-complete" : "progress-muted"}><span>{order.status === "PAYMENT_FAILED" ? <X size={18} /> : order.status === "CONFIRMED" ? <Check size={18} /> : 2}</span><div><strong>Payment reviewed</strong><p>{order.status === "PAYMENT_FAILED" ? "The payment was declined and no money was charged." : order.status === "CONFIRMED" ? `${order.paymentMethod} was confirmed.` : "Payment was not attempted."}</p></div></div>
-            <div className={confirmed ? "progress-complete" : "progress-muted"}><span>{confirmed ? <Check size={18} /> : 3}</span><div><strong>Delivery update</strong><p>{confirmed ? order.estimatedDelivery : "No shipment was created."}</p></div></div>
-          </div>
-        </section>
+        <div className="order-story">
+          <section className="order-progress-panel">
+            <div className="section-heading">
+              <div><span className="eyebrow">Order journey</span><h2>{confirmed ? "From checkout to your doorstep" : "The order stopped safely"}</h2><p>{confirmed ? "Every confirmed order follows the same inventory, payment, fulfilment and delivery path." : "The timeline shows where processing stopped and which later stages were prevented."}</p></div>
+            </div>
+            <ol className="customer-timeline">
+              {order.milestones.map((milestone) => (
+                <li className={`milestone-${milestone.state.toLowerCase()}`} key={milestone.code}>
+                  <span className="milestone-icon">{milestoneIcon(milestone)}</span>
+                  <div>
+                    <div className="milestone-heading"><strong>{milestone.label}</strong><time>{eventTime(milestone.occurredAt)}</time></div>
+                    <p>{milestone.message}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className={`inventory-result inventory-${order.inventoryDisposition.toLowerCase()}`}>
+            <div><span className="eyebrow">Inventory result</span><h2>{order.inventoryDisposition === "COMMITTED" ? "Stock committed to the order" : order.inventoryDisposition === "RELEASED" ? "Reservation released" : "Reservation rejected"}</h2><p>{inventoryMessage[order.inventoryDisposition]}</p></div>
+            <div className="inventory-lines">
+              {order.inventory.map((line) => (
+                <article key={line.productId}>
+                  <strong>{line.name}</strong>
+                  <dl>
+                    <div><dt>Before</dt><dd>{line.availableBefore}</dd></div>
+                    <div><dt>Held</dt><dd>{line.reserved}</dd></div>
+                    <div><dt>After</dt><dd>{line.availableAfter}</dd></div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
         <aside className="order-receipt">
           <h2>Order details</h2>
           <dl>
