@@ -29,7 +29,7 @@ export function ProfilePage() {
     <section className="shell profile-page" id="profile">
       <div className="profile-hero">
         <span className="profile-avatar"><UserRound size={34} /></span>
-        <div><span className="eyebrow">Sunshine profile</span><h1>Hi, Divya.</h1><p>A public demonstration profile with recent order states. Orders you place are stored only in this browser.</p></div>
+        <div><span className="eyebrow">Sunshine profile</span><h1>Hi, Divya.</h1><p>Your recent order states in one place. Orders you place are stored only in this browser.</p></div>
       </div>
 
       <div className="profile-grid">

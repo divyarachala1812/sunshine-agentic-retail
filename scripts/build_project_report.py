@@ -6,7 +6,7 @@ from pathlib import Path
 from report_template import build_research_report
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "output/pdf/Sunshine_Retail_Platform_Report.pdf"
+OUTPUT = ROOT / "output/pdf/Sunshine_Report.pdf"
 FIGURES = ROOT / "reports/figures"
 SCREENSHOTS = ROOT / "docs/screenshots"
 
@@ -69,6 +69,62 @@ def build_report() -> Path:
             ],
         },
         {
+            "title": "Frontend and hosted API architecture",
+            "paragraphs": [
+                "The Next.js application separates server-rendered catalogue pages, client-side cart and profile state, and route handlers. React components render product, checkout, order and support views, while TypeScript types define the payloads exchanged with order, recommendation and conversation endpoints.",
+                "Route handlers select an external service when its URL is configured and a contract-compatible hosted adapter otherwise. The customer interface therefore consumes one stable response shape in local Docker development and on the public Vercel deployment.",
+            ],
+            "figure": FIGURES / "08_frontend_api_architecture.png",
+            "caption": "Architecture detail A. Browser, Next.js route handlers, adapters and typed response boundary.",
+            "explanation": [
+                ["Frontend responsibility", "Next.js and React own navigation, interaction and customer explanation, not inventory or payment decisions."],
+                ["API responsibility", "TypeScript route handlers validate and route requests without changing the declared order contract."],
+                ["Deployment result", "The same UI works with local Java and Python services or the hosted adapters used by Vercel."],
+            ],
+        },
+        {
+            "title": "Java backend order architecture",
+            "paragraphs": [
+                "The Java service begins at a Spring MVC controller and passes a validated request to OrderOrchestrator. Catalogue, risk, payment, fulfilment, delivery and notification components return typed results in dependency order.",
+                "A stock rejection stops before risk and payment. A declined payment releases held units and prevents fulfilment and delivery. Only a successful payment commits inventory and creates the eight-stage customer timeline. A fixed clock in the tests keeps delivery dates reproducible.",
+            ],
+            "figure": FIGURES / "09_java_order_architecture.png",
+            "caption": "Architecture detail B. Spring controller, Java orchestrator and order-state responsibilities.",
+            "explanation": [
+                ["Backend responsibility", "Spring Boot owns validation, orchestration, state transitions and the delivery contract."],
+                ["Failure control", "The orchestrator explicitly marks later components as stopped after rejection or decline."],
+                ["Backend skill", "The service demonstrates REST design, Java records, dependency injection, bounded components and JUnit scenario tests."],
+            ],
+        },
+        {
+            "title": "Python recommendation and analytics architecture",
+            "paragraphs": [
+                "The FastAPI service reads the verified catalogue and ranks related products using category, rating and relative price distance. It returns declared product records and never creates a price, stock value or size.",
+                "A separate pandas workflow reads the synthetic order fixture, validates required fields, normalises outcomes and writes KPI JSON. Recommendation and analytics services support the customer journey but do not own inventory or order state.",
+            ],
+            "figure": FIGURES / "10_python_data_architecture.png",
+            "caption": "Architecture detail C. Python product-ranking and analytical-output boundaries.",
+            "explanation": [
+                ["Recommendation path", "Catalogue JSON passes through FastAPI ranking and returns only verified products."],
+                ["Analytics path", "Synthetic order CSV passes through pandas validation before metrics and figures are produced."],
+                ["Boundary", "Neither Python path can approve payment, reserve stock or advance a delivery milestone."],
+            ],
+        },
+        {
+            "title": "Deployment and verification architecture",
+            "paragraphs": [
+                "GitHub stores the cross-runtime source and contracts. Vitest, JUnit and pytest verify the responsibilities owned by TypeScript, Java and Python. Docker Compose starts the complete local stack, while Vercel hosts the public Next.js application.",
+                "Ollama Cloud is optional and limited to supported intent interpretation. The model key remains on the server. When the model is unavailable, bounded local intent logic keeps catalogue, cart and order support operational.",
+            ],
+            "figure": FIGURES / "11_deployment_architecture.png",
+            "caption": "Architecture detail D. Source control, quality gates, local integration, public hosting and optional model boundary.",
+            "explanation": [
+                ["Quality gates", "Twenty-three tests run across three runtimes rather than treating a frontend build as complete verification."],
+                ["Local integration", "Docker Compose connects Next.js, Spring Boot and FastAPI with explicit service URLs."],
+                ["Hosted boundary", "Vercel serves the customer application, while optional external services remain independently deployable."],
+            ],
+        },
+        {
             "title": "Order orchestration experiment",
             "paragraphs": [
                 "The order service uses six bounded components coordinated by OrderOrchestrator. Catalogue Agent handles the availability reservation, Risk Agent checks deterministic address and order rules, Payment Agent handles the simulated method, Fulfilment Agent plans picking and packing, Delivery Agent creates the tracking contract, and Notification Agent records the final update.",
@@ -92,7 +148,7 @@ def build_report() -> Path:
             "explanation": [
                 ["Test question", "Is stock committed only after payment succeeds, and is the earlier value restored after a decline?"],
                 ["Observed result", "Confirmation moves Available to Reserved to Committed. Payment failure moves Available to Reserved to Released. A stock conflict moves Available directly to Rejected before payment."],
-                ["Interpretation", "The state model prevents two common demonstration errors: charging for unavailable products and losing stock after a declined payment."],
+                ["Interpretation", "The state model prevents two common order errors: charging for unavailable products and losing stock after a declined payment."],
             ],
         },
         {
@@ -148,6 +204,20 @@ def build_report() -> Path:
             ],
         },
         {
+            "title": "Actual cross-runtime test execution",
+            "paragraphs": [
+                "I reran the three current test suites for this report revision. Fifteen TypeScript tests, four JUnit tests and four Python tests passed. No failed test is omitted from the reported total of twenty-three.",
+                "The terminal evidence names every runtime because a combined chart cannot show whether one backend was skipped. The scenarios cover success, failure recovery, assistant boundaries, recommendation behaviour and API validation.",
+            ],
+            "figure": FIGURES / "12_test_execution.png",
+            "caption": "Test evidence. Current TypeScript, Java and Python execution results for Sunshine.",
+            "explanation": [
+                ["TypeScript", "Fifteen tests verify price totals, fees, support intent, order lookup, stock results and the hosted contract."],
+                ["Java", "Four JUnit tests verify confirmation, release after decline, rejection before payment and delivery milestones."],
+                ["Python", "Four pytest cases verify ranking, validation and FastAPI behaviour."],
+            ],
+        },
+        {
             "title": "Application scale and build verification",
             "paragraphs": [
                 "The catalogue and route counts are build contract checks rather than business success metrics. They confirm that repeated product pages are generated and that the application contains the intended navigation and service routes without inflating the dataset for appearance.",
@@ -169,7 +239,7 @@ def build_report() -> Path:
             "caption": "Figure 8. Checkout evidence with address, payment method and reproducible outcome controls.",
             "explanation": [
                 ["Test question", "Can each order branch be reproduced without entering real payment information?"],
-                ["Observed result", "The form collects only demonstration address data, labels the payment as simulated and provides successful, declined and unavailable outcomes."],
+                ["Observed result", "The form collects only temporary address data, labels the payment as simulated and provides successful, declined and unavailable outcomes."],
                 ["Interpretation", "The control is intentionally visible because it makes success and safe failure evidence repeatable in a public project."],
             ],
         },
@@ -192,7 +262,7 @@ def build_report() -> Path:
             "paragraphs": [
                 "All products, ratings, payments, customers, inventory quantities, orders and courier events are synthetic. Browser storage is personal to one visitor and is not shared warehouse inventory. The public Vercel deployment may use hosted TypeScript adapters rather than the local Java and Python services.",
                 "The project does not contain production authentication, database transactions, payment settlement, fraud detection, reservation expiry, courier webhooks, returns processing or operational monitoring. The assistant is limited to website support and must not be interpreted as a general purpose shopping or financial adviser.",
-                "These boundaries identify exactly what was tested: a coherent demonstration of contracts, state transitions, orchestration and customer explanation.",
+                "These boundaries identify exactly what was tested: coherent contracts, state transitions, orchestration and customer explanations.",
                 "The analytical measures also require careful interpretation. Twelve rows are sufficient to verify formulas and reporting structure, but they are not evidence of real market demand, city performance or commercial revenue. The values are reported only as outcomes of the declared synthetic fixture.",
                 "Security testing is limited to server only handling of the optional model key, validated order input and the absence of real payment credentials. Production review would also require dependency scanning, rate limiting, access control, audit logs, privacy assessment and incident response procedures.",
             ],
@@ -212,7 +282,7 @@ def build_report() -> Path:
                 "Sunshine demonstrates a connected retail order rather than only an ecommerce interface. The strongest result is the agreement between the customer milestone, inventory snapshot, internal agent trace and automated tests for all three checkout branches.",
                 "The project also connects Java orchestration, Python recommendations and analytics, Next.js customer interaction and bounded conversational support without presenting synthetic behavior as production commerce. This combination keeps the implementation explainable and reproducible.",
                 "The implementation connects frontend state management, typed API design, Java responsibility boundaries, Python ranking and analysis, language model guardrails, failure testing and technical communication through one coherent problem. Every result is supported by a file, test, figure or customer flow.",
-                "Most importantly, the project treats failed payment and unavailable stock as first class outcomes. Correct recovery is part of the product, not an error message added after the successful path. That design decision is what turns the demonstration into a complete order lifecycle study.",
+                "Most importantly, the project treats failed payment and unavailable stock as first class outcomes. Correct recovery is part of the product, not an error message added after the successful path. That design decision makes the prototype a complete order lifecycle study.",
                 "For the confirmed branch, the evidence can be followed from the checkout request to the final screen. The requested quantity is available, a reservation is created, risk rules pass, payment is approved, the quantity is committed, picking becomes current and the remaining delivery stages are scheduled. The same order is saved for profile lookup and conversational support.",
                 "For the declined branch, the evidence follows a different path. The quantity is initially reserved, payment fails, the held units return to availability and neither fulfilment nor delivery is created. The cart remains available for another attempt. For the unavailable branch, reservation fails before risk or payment, which proves that the project avoids charging for a quantity it cannot supply.",
                 "The recommendation and analytics parts support the order lifecycle without replacing it. Recommendations resolve only to declared catalogue records, while the KPI workflow counts failed outcomes in the order funnel and excludes them from revenue. Both choices preserve the same principle: derived information must agree with the underlying commerce state.",

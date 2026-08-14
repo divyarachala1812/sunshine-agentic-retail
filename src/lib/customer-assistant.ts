@@ -150,7 +150,7 @@ function helpReply(query: string, reply: AssistantReply) {
     return reply;
   }
   if (/\b(cancel|cancellation)\b/.test(text)) {
-    reply.message = "Order cancellation is not enabled in this demonstration. A failed payment creates no shipment, and an unavailable item stops before payment. You can review every result under Recent orders.";
+    reply.message = "Order cancellation is not enabled in this prototype. A failed payment creates no shipment, and an unavailable item stops before payment. You can review every result under Recent orders.";
     reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
     return reply;
   }
@@ -161,7 +161,7 @@ function helpReply(query: string, reply: AssistantReply) {
     return reply;
   }
   if (/\b(delivery|deliver|shipping|shipment|arrive|arrival|fee|free delivery|how long)\b/.test(text)) {
-    reply.message = "Product pages show a delivery estimate. Delivery is free when the cart subtotal is at least ₹999 and costs ₹79 below that amount. Confirmed orders show their own delivery update in Recent orders. All dates and shipments are demonstrations.";
+    reply.message = "Product pages show a delivery estimate. Delivery is free when the cart subtotal is at least ₹999 and costs ₹79 below that amount. Confirmed orders show their own delivery update in Recent orders. Delivery dates and shipments are simulated.";
     reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
     reply.quickReplies = ["Track an order", "Explain returns"];
     return reply;
@@ -172,17 +172,17 @@ function helpReply(query: string, reply: AssistantReply) {
     return reply;
   }
   if (/\b(stock|available|availability|unavailable|sold out|only one|left)\b/.test(text)) {
-    reply.message = "Stock comes from the Sunshine catalogue and this browser’s demonstration inventory. Low stock products show how many units remain. A successful purchase reduces browser stock, while a failed payment does not.";
+    reply.message = "Stock comes from the Sunshine catalogue and inventory stored in this browser. Low stock products show how many units remain. A successful purchase reduces browser stock, while a failed payment does not.";
     reply.quickReplies = ["Show casual sneakers", "Find electronics under ₹3,000"];
     return reply;
   }
   if (/\b(price|cost|discount|offer|mrp|gst|rupee|₹)\b/.test(text)) {
-    reply.message = "All prices are shown in Indian rupees and include GST for this demonstration. Product cards show the selling price, MRP and discount when available. Tell me a category and budget to narrow the catalogue.";
+    reply.message = "All catalogue prices are shown in Indian rupees and include GST. Product cards show the selling price, MRP and discount when available. Tell me a category and budget to narrow the catalogue.";
     reply.quickReplies = ["Electronics under ₹3,000", "Shoes under ₹2,000"];
     return reply;
   }
   if (/\b(account|profile|privacy|data|information|saved|save my|login|sign in|password|personal details|browser storage)\b/.test(text)) {
-    reply.message = "Sunshine uses a public demonstration profile and does not require sign in. Cart items, personal demonstration orders and inventory changes stay in this browser’s local storage. The project has no shared customer database.";
+    reply.message = "Sunshine uses a public profile and does not require sign in. Cart items, personal orders and inventory changes stay in this browser’s local storage. The application has no shared customer database.";
     reply.actions = [{ label: "Open account settings", href: "/account", kind: "account" }];
     reply.quickReplies = ["Show my recent orders", "What information is saved?"];
     return reply;
@@ -203,7 +203,7 @@ function helpReply(query: string, reply: AssistantReply) {
     return reply;
   }
   if (/\b(order|track|tracking|package|parcel)\b/.test(text)) {
-    reply.message = "Open Recent orders from the profile menu to see all demonstration orders. For one exact update, send me the complete order number beginning with SUN and I will return its status, items and delivery information from Sunshine data.";
+    reply.message = "Open Recent orders from the profile menu to see all saved orders. For one exact update, send me the complete order number beginning with SUN and I will return its status, items and delivery information from Sunshine data.";
     reply.actions = [{ label: "View recent orders", href: "/profile#orders", kind: "profile" }];
     reply.quickReplies = ["Show my recent orders"];
     return reply;
@@ -214,7 +214,7 @@ function helpReply(query: string, reply: AssistantReply) {
     return reply;
   }
   if (/\b(what is sunshine|about sunshine|purpose|demo|real store|real website|how does this work)\b/.test(text)) {
-    reply.message = "Sunshine is a student built Indian ecommerce demonstration. It connects product discovery, Divya shopping support, cart, simulated checkout, stock outcomes, delivery updates and recent orders using consistent project data. It does not sell or ship real products.";
+    reply.message = "Sunshine is an Indian ecommerce prototype that connects product discovery, Divya shopping support, cart, simulated checkout, stock outcomes, delivery updates and recent orders using consistent application data. It does not sell or ship real products.";
     reply.quickReplies = ["What can Divya do?", "How does checkout work?"];
     return reply;
   }

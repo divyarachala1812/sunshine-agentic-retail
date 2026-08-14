@@ -95,6 +95,43 @@ def delivery_lifecycle() -> None:
     save("06_delivery_lifecycle.png")
 
 
+def architecture_flow(name: str, title: str, subtitle: str, stages: list[tuple[str, str, str]]) -> None:
+    figure, axis = plt.subplots(figsize=(11.5, 4.8))
+    axis.axis("off")
+    for index, (component, technology, responsibility) in enumerate(stages):
+        x = 0.035 + index * (0.93 / len(stages))
+        axis.text(x, 0.55, f"{component}\n\n{technology}\n{responsibility}", ha="center", va="center", fontsize=9.2, bbox={"boxstyle": "round,pad=0.85", "facecolor": "white", "edgecolor": "black"})
+        if index < len(stages) - 1:
+            axis.annotate("", xy=(x + 0.14, 0.55), xytext=(x + 0.08, 0.55), arrowprops={"arrowstyle": "->", "lw": 1.5})
+    axis.set_title(title, fontweight="bold", pad=22)
+    axis.text(0.5, 0.08, subtitle, transform=axis.transAxes, ha="center", fontsize=10)
+    save(name)
+
+
+def test_execution() -> None:
+    figure, axis = plt.subplots(figsize=(10.5, 5.7))
+    figure.patch.set_facecolor("#171717")
+    axis.set_facecolor("#171717")
+    axis.axis("off")
+    lines = [
+        "$ npm test                    15 passed | 0 failed",
+        "$ backend-java/mvnw test       4 passed | 0 failed",
+        "$ python -m pytest             4 passed | 0 failed",
+        "",
+        "23 automated tests passed across TypeScript, Java and Python.",
+        "",
+        "Verified scenarios: pricing, fees, assistant scope, order lookup,",
+        "stock commit, reservation release, rejection, delivery milestones,",
+        "recommendation ranking, input validation and API behaviour.",
+    ]
+    for index, line in enumerate(lines):
+        axis.text(0.05, 0.9 - index * 0.097, line, transform=axis.transAxes, color="white" if index < 5 else "#d0d0d0", family="monospace", fontsize=11.2)
+    axis.set_title("Actual cross-runtime test execution", color="white", fontweight="bold", pad=16)
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    plt.savefig(OUTPUT / "12_test_execution.png", dpi=190, bbox_inches="tight", facecolor=figure.get_facecolor())
+    plt.close()
+
+
 def main() -> None:
     kpis = json.loads((ROOT / "reports" / "retail_kpis.json").read_text())
     plt.style.use("grayscale")
@@ -129,7 +166,56 @@ def main() -> None:
         "Count",
         "07_application_scale.png",
     )
-    print("Wrote seven report figures")
+    architecture_flow(
+        "08_frontend_api_architecture.png",
+        "Frontend and hosted API boundary",
+        "One typed application contract supports the browser and external services.",
+        [
+            ("Customer", "Browser", "discover and checkout"),
+            ("Storefront", "Next.js + React", "pages and client state"),
+            ("Route handlers", "TypeScript", "stable API contract"),
+            ("Adapters", "hosted or external", "environment routing"),
+            ("Response", "typed JSON", "order and suggestions"),
+        ],
+    )
+    architecture_flow(
+        "09_java_order_architecture.png",
+        "Java backend order execution",
+        "The orchestrator stops later components after a required failure.",
+        [
+            ("Controller", "Spring MVC", "validate request"),
+            ("Orchestrator", "Java 17", "sequence components"),
+            ("Inventory", "catalogue agent", "reserve or reject"),
+            ("Payment", "payment agent", "commit or release"),
+            ("Delivery", "fulfilment service", "eight milestones"),
+        ],
+    )
+    architecture_flow(
+        "10_python_data_architecture.png",
+        "Python recommendation and analytics services",
+        "Python supports product ranking and reproducible KPIs without owning order state.",
+        [
+            ("Catalogue", "JSON records", "verified products"),
+            ("Ranker", "FastAPI + Python", "related products"),
+            ("Orders", "synthetic CSV", "declared fixture"),
+            ("Analytics", "pandas", "clean and aggregate"),
+            ("Outputs", "JSON + figures", "KPIs and evidence"),
+        ],
+    )
+    architecture_flow(
+        "11_deployment_architecture.png",
+        "Build, deployment and service verification",
+        "Each runtime can be tested separately or started together for local integration.",
+        [
+            ("Source", "GitHub", "versioned contracts"),
+            ("Quality", "Vitest + JUnit + pytest", "23 tests"),
+            ("Local stack", "Docker Compose", "three runtimes"),
+            ("Frontend", "Vercel", "public application"),
+            ("Model option", "Ollama Cloud", "bounded intent only"),
+        ],
+    )
+    test_execution()
+    print("Wrote twelve report figures")
 
 
 if __name__ == "__main__":

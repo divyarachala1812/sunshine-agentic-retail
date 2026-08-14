@@ -67,7 +67,7 @@ The orchestrator returns an inventory disposition and a per item before, held an
 | Payment failed | Available to reserved to released | Declined | No shipment created |
 | Out of stock | Available to rejected | Not attempted | No shipment created |
 
-The browser commits the returned stock value only for a confirmed order. The failed payment branch restores the earlier availability, while the stock conflict branch marks the affected product unavailable for the current browser demonstration.
+The browser commits the returned stock value only for a confirmed order. The failed payment branch restores the earlier availability, while the stock conflict branch marks the affected product unavailable in the current browser.
 
 ### 5.2 Customer delivery timeline
 
@@ -88,10 +88,10 @@ The Ollama key remains server only. It is never included in a browser response o
 
 ## 7. State and data
 
-The product catalogue and public demonstration orders are static synthetic data. The following customer state is stored in versioned browser storage.
+The product catalogue and public example orders are static synthetic data. The following customer state is stored in versioned browser storage.
 
 1. Shopping cart
-2. Personal demonstration orders
+2. Personal orders
 3. Per browser inventory changes
 4. Personal order timelines and inventory outcomes
 

@@ -80,7 +80,7 @@ Supported payment methods:
 2. `CARD`
 3. `COD`
 
-Supported demonstration scenarios:
+Supported test scenarios:
 
 1. `SUCCESS`
 2. `PAYMENT_FAILED`

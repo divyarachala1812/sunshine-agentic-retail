@@ -5,8 +5,8 @@ export const metadata: Metadata = { title: "Help centre" };
 
 const topics = [
   { icon: PackageCheck, title: "Track an order", copy: "Open Recent orders from the profile menu or give Divya an order number for the latest delivery update." },
-  { icon: CreditCard, title: "Payment help", copy: "UPI, card and cash on delivery are simulated. The demonstration never makes a real charge." },
-  { icon: Truck, title: "Delivery", copy: "Product estimates and confirmed-order dates are shown in Indian local time for the demonstration address." },
+  { icon: CreditCard, title: "Payment help", copy: "UPI, card and cash on delivery are simulated. Sunshine never makes a real charge." },
+  { icon: Truck, title: "Delivery", copy: "Product estimates and confirmed order dates are shown in Indian local time for the entered address." },
   { icon: RotateCcw, title: "Returns", copy: "The storefront demonstrates a seven-day return policy; no physical fulfilment or returns are performed." },
 ];
 

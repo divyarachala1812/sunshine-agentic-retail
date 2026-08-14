@@ -16,15 +16,15 @@ Live application: [Sunshine](https://sunshine-agentic-retail.vercel.app)
 
 ## 1. Project overview
 
-Sunshine provides a complete demonstration shopping journey for customers in India. The catalogue contains 50 products across women’s fashion, men’s fashion, footwear and bags, electronics, and home and living. Prices are displayed in Indian rupees. Delivery rules, address fields and payment choices follow the Indian retail context.
+Sunshine provides a complete shopping prototype for customers in India. The catalogue contains 50 products across women’s fashion, men’s fashion, footwear and bags, electronics, and home and living. Prices are displayed in Indian rupees. Delivery rules, address fields and payment choices follow the Indian retail context.
 
 ### 1.1 Problem and purpose
 
-Many commerce demonstrations stop after product listing, cart and checkout screens. The customer support conversation, stock decision, payment result, delivery update and order history often use separate sample data, so the full journey cannot be followed or verified.
+Many small commerce projects stop after product listing, cart and checkout screens. The customer support conversation, stock decision, payment result, delivery update and order history often use separate sample data, so the full journey cannot be followed or verified.
 
 The root cause is disconnected application state. A recommendation may not match the real catalogue, a support response may invent an order update, and a failed checkout may not explain which step stopped the order.
 
-I built Sunshine to solve this project gap. The same catalogue, cart, inventory and order records support the storefront, Divya assistant, checkout results and recent orders. The application therefore demonstrates how an ecommerce interface can remain simple for the customer while several focused services coordinate behind it.
+I built Sunshine to close this gap. The same catalogue, cart, inventory and order records support the storefront, Divya assistant, checkout results and recent orders. The application shows how an ecommerce interface can remain simple for the customer while several focused services coordinate behind it.
 
 The application supports the following customer journey.
 
@@ -113,7 +113,21 @@ The conversational support route follows a separate boundary. Ollama interprets 
 
 More information is available in [architecture documentation](docs/ARCHITECTURE.md) and [API documentation](docs/API_CONTRACTS.md).
 
-## 4. Technology
+## 4. Backend services and technology
+
+The backend is divided by responsibility instead of placing every rule in the Next.js interface.
+
+| Service | Main technology | Owned responsibility | Verification |
+| --- | --- | --- | --- |
+| Order API | Java 17 and Spring Boot 4 | Request validation, order coordination and typed response contract | Four JUnit scenarios |
+| Inventory workflow | Java service components | Reserve, commit, release and reject quantities | Success and failure state assertions |
+| Payment and fulfilment | Java service components | Simulated payment result, picking, packing and delivery milestones | Stopping-rule and timeline assertions |
+| Recommendation API | Python 3.13 and FastAPI | Deterministic related-product ranking from verified catalogue data | Four pytest cases |
+| Retail analytics | Python and pandas | Raw-order validation, confirmation funnel, revenue and average order value | Reproducible KPI JSON and figures |
+| Hosted API layer | Next.js route handlers and TypeScript adapters | Stable public contract and environment routing | Fifteen Vitest cases and production build |
+| Conversational boundary | Ollama Cloud with local fallback | Supported intent interpretation only | Scope, catalogue and order-lookup tests |
+
+The Java response includes the order status, per-component trace, inventory before/held/after values and eight customer milestones. Next.js uses the same object for the order page, profile history and Divya order lookup. Python recommendations return only catalogue products and cannot alter payment, inventory or delivery state.
 
 1. The storefront uses Next.js 16, React 19, TypeScript and CSS for pages, product discovery, cart, checkout, profile and the chat interface.
 2. Conversational support uses Ollama Cloud and TypeScript for natural language intent selection with verified application actions.
@@ -125,13 +139,13 @@ More information is available in [architecture documentation](docs/ARCHITECTURE.
 
 ## 5. Order processing
 
-The Java order service demonstrates a compact multi agent order workflow. Six deterministic agents have one responsibility each: catalogue and inventory, risk, payment, fulfilment, delivery and notification. `OrderOrchestrator` passes typed results from one agent to the next and stops later work when a required step fails.
+The Java order service implements a compact multi agent order workflow. Six deterministic agents have one responsibility each: catalogue and inventory, risk, payment, fulfilment, delivery and notification. `OrderOrchestrator` passes typed results from one agent to the next and stops later work when a required step fails.
 
 These agents do not use a language model. They are focused software components that make the sequence, failure rules and service boundaries easy to test. Divya is the separate customer facing AI assistant. This distinction keeps the project description accurate.
 
 The technical workflow remains in the source code and documentation. The shopping interface translates those internal decisions into customer language and never exposes agent names in normal navigation.
 
-The order service supports three demonstration results.
+The order service supports three controlled checkout results.
 
 1. A successful order commits the reserved quantity, produces a delivery estimate and creates an eight stage tracking timeline.
 2. A declined payment releases the reserved quantity, creates no shipment and keeps the cart available.
@@ -242,13 +256,11 @@ The verified suite contains 23 tests: 15 TypeScript tests, 4 Java tests and 4 Py
 
 ## 11. Project report
 
-The [research style project report](output/pdf/Sunshine_Retail_Platform_Report.pdf) explains the problem, customer journey, multi agent sequence, inventory state transitions, delivery lifecycle, analytics results, test evidence, limitations, reproducibility and conclusion.
+The [project report](output/pdf/Sunshine_Report.pdf) follows the customer journey through discovery, cart, inventory reservation, payment, fulfilment, delivery, support, analytics and test results.
 
 ## 12. Author
 
 Divya Rachala
-
-Bachelor’s student in Data Science
 
 GitHub: [divyarachala1812](https://github.com/divyarachala1812)
 

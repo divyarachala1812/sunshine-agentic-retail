@@ -16,7 +16,7 @@ export function Footer() {
         </div>
       </div>
       <div className="shell footer-note">
-        Demonstration store. Products, payments and delivery updates are simulated.
+        Products, payments and delivery updates are simulated.
       </div>
     </footer>
   );

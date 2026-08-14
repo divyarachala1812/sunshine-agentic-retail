@@ -6,7 +6,7 @@ from .recommender import recommend_candidates
 
 app = FastAPI(
     title="Sunshine Recommendation Service",
-    description="A small content-based recommender for the Sunshine retail portfolio project.",
+    description="A content based recommender for the Sunshine retail catalogue.",
     version="1.0.0",
 )
 

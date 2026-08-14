@@ -10,6 +10,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import (
     Image,
     KeepTogether,
+    PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -138,7 +139,7 @@ def build_research_report(
         [
             Spacer(1, 4 * mm),
             Paragraph(f"<b>Keywords:</b> {keywords}", styles["ResearchBody"]),
-            Spacer(1, 3 * mm),
+            PageBreak(),
             Paragraph("Report structure", styles["ResearchHeading"]),
             Paragraph(
                 "The report presents the problem, project scope, customer journey, system design, inventory and delivery controls, evaluation evidence, limitations, reproducibility details, and conclusion.",
@@ -196,7 +197,7 @@ def build_research_report(
                     Paragraph(f"<b>{label}:</b> {text}", styles["ResearchBody"])
                 )
         if index < len(sections):
-            story.append(Spacer(1, 4 * mm))
+            story.append(PageBreak())
 
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     return output
