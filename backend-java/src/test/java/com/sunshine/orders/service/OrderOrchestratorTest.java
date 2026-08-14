@@ -52,6 +52,9 @@ class OrderOrchestratorTest {
         assertThat(result.milestones())
                 .filteredOn(stage -> stage.code() == MilestoneCode.PICKING)
                 .allMatch(stage -> stage.state() == MilestoneState.CURRENT);
+        assertThat(result.milestones())
+                .filteredOn(stage -> stage.occurredAt() != null)
+                .allMatch(stage -> !stage.occurredAt().isAfter(result.createdAt()));
     }
 
     @Test

@@ -31,6 +31,7 @@ describe("Vercel order adapter", () => {
     expect(result.inventoryDisposition).toBe("COMMITTED");
     expect(result.inventory[0]).toMatchObject({ availableBefore: 1, reserved: 1, availableAfter: 0 });
     expect(result.milestones.find((stage) => stage.code === "PICKING")?.state).toBe("CURRENT");
+    expect(result.milestones.filter((stage) => stage.occurredAt).every((stage) => stage.occurredAt! <= result.createdAt)).toBe(true);
     expect(result.items[0].slug).toBe("anvi-aarohi-floral-kurta-set");
   });
 

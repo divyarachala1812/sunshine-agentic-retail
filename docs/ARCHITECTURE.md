@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-I designed Sunshine as a student scale retail system with clear boundaries between the customer interface, conversational support, order processing, recommendations and analytics.
+I designed Sunshine as a focused retail system with clear boundaries between the customer interface, conversational support, order processing, recommendations and analytics.
 
 The system keeps customer actions simple. Technical workflow details remain inside the services and documentation rather than appearing in normal shopping navigation.
 

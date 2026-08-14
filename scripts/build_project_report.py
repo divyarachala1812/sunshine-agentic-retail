@@ -98,7 +98,7 @@ def build_report() -> Path:
         {
             "title": "Customer delivery lifecycle experiment",
             "paragraphs": [
-                "A confirmed order begins a separate customer lifecycle. The same eight stage contract is returned by Java and the hosted adapter. Public examples advance that contract to shipped, out for delivery and delivered so the reviewer can inspect more than the first successful checkout state.",
+                "A confirmed order begins a separate customer lifecycle. The same eight stage contract is returned by Java and the hosted adapter. Public examples advance that contract to shipped, out for delivery and delivered so the implementation demonstrates more than the first successful checkout state.",
             ],
             "figure": FIGURES / "06_delivery_lifecycle.png",
             "caption": "Figure 3. Eight ordered milestones from order receipt through delivery.",
@@ -157,7 +157,7 @@ def build_report() -> Path:
             "explanation": [
                 ["Test question", "Does the build preserve the declared catalogue and generated page scope?"],
                 ["Observed result", "The verified build contains 50 products, five categories and 62 generated or dynamic pages."],
-                ["Interpretation", "The scope exercises reusable product and route behaviour while remaining understandable as a student project."],
+                ["Interpretation", "The scope exercises reusable product and route behaviour while keeping every generated page connected to the same catalogue rules."],
             ],
         },
         {
@@ -168,7 +168,7 @@ def build_report() -> Path:
             "figure": SCREENSHOTS / "04_checkout.jpg",
             "caption": "Figure 8. Checkout evidence with address, payment method and reproducible outcome controls.",
             "explanation": [
-                ["Test question", "Can a reviewer reproduce each order branch without entering real payment information?"],
+                ["Test question", "Can each order branch be reproduced without entering real payment information?"],
                 ["Observed result", "The form collects only demonstration address data, labels the payment as simulated and provides successful, declined and unavailable outcomes."],
                 ["Interpretation", "The control is intentionally visible because it makes success and safe failure evidence repeatable in a public project."],
             ],
@@ -192,7 +192,7 @@ def build_report() -> Path:
             "paragraphs": [
                 "All products, ratings, payments, customers, inventory quantities, orders and courier events are synthetic. Browser storage is personal to one visitor and is not shared warehouse inventory. The public Vercel deployment may use hosted TypeScript adapters rather than the local Java and Python services.",
                 "The project does not contain production authentication, database transactions, payment settlement, fraud detection, reservation expiry, courier webhooks, returns processing or operational monitoring. The assistant is limited to website support and must not be interpreted as a general purpose shopping or financial adviser.",
-                "These boundaries do not weaken the project result. They identify exactly what was tested: a coherent student scale demonstration of contracts, state transitions, orchestration and customer explanation.",
+                "These boundaries identify exactly what was tested: a coherent demonstration of contracts, state transitions, orchestration and customer explanation.",
                 "The analytical measures also require careful interpretation. Twelve rows are sufficient to verify formulas and reporting structure, but they are not evidence of real market demand, city performance or commercial revenue. The values are reported only as outcomes of the declared synthetic fixture.",
                 "Security testing is limited to server only handling of the optional model key, validated order input and the absence of real payment credentials. Production review would also require dependency scanning, rate limiting, access control, audit logs, privacy assessment and incident response procedures.",
             ],
@@ -200,9 +200,9 @@ def build_report() -> Path:
         {
             "title": "Reproducibility and future work",
             "paragraphs": [
-                "The repository contains the Next.js application, Java and Python services, Docker files, API contracts, synthetic source data, KPI output, 23 automated tests, browser captures, seven generated experiment figures and this report. A reviewer can run each language suite independently or start the combined local stack with Docker Compose.",
+                "The repository contains the Next.js application, Java and Python services, Docker files, API contracts, synthetic source data, KPI output, 23 automated tests, browser captures, seven generated experiment figures and this report. Each language suite can run independently, or the combined local stack can start with Docker Compose.",
                 "The next stage would add a shared relational database, authenticated accounts, idempotent order creation, expiring reservations, payment webhooks, a courier event simulator and end to end service tracing. Those features should be added only with new contract and failure tests, because additional components would otherwise reintroduce the disconnected state problem this project addresses.",
-                "Reproduction begins with the automated suites because they establish the business contract before a visual review. The production Next.js build then verifies the generated routes and TypeScript types. Java and Python can be run separately, which allows a reviewer to inspect the order and recommendation services without requiring the optional conversational model.",
+                "Reproduction begins with the automated suites because they establish the business contract before a visual review. The production Next.js build then verifies the generated routes and TypeScript types. Java and Python can run separately, so the order and recommendation services do not require the optional conversational model.",
                 "Generated reports and figures are treated as outputs rather than hidden manual calculations. The KPI JSON is read directly by the report builder, and the figure scripts declare the test counts and scenario states they visualise. This keeps the written result consistent with the repository evidence.",
             ],
         },
@@ -210,8 +210,8 @@ def build_report() -> Path:
             "title": "Conclusion",
             "paragraphs": [
                 "Sunshine demonstrates a connected retail order rather than only an ecommerce interface. The strongest result is the agreement between the customer milestone, inventory snapshot, internal agent trace and automated tests for all three checkout branches.",
-                "The project also connects Java orchestration, Python recommendations and analytics, Next.js customer interaction and bounded conversational support without presenting synthetic behavior as production commerce. This combination makes the implementation explainable, reproducible and appropriate for a final year student portfolio.",
-                "The implementation shows several distinct skills through one coherent problem: frontend state management, typed API design, Java responsibility boundaries, Python ranking and analysis, language model guardrails, failure testing and technical communication. Each skill is supported by a file, test, figure or customer flow that a reviewer can inspect.",
+                "The project also connects Java orchestration, Python recommendations and analytics, Next.js customer interaction and bounded conversational support without presenting synthetic behavior as production commerce. This combination keeps the implementation explainable and reproducible.",
+                "The implementation connects frontend state management, typed API design, Java responsibility boundaries, Python ranking and analysis, language model guardrails, failure testing and technical communication through one coherent problem. Every result is supported by a file, test, figure or customer flow.",
                 "Most importantly, the project treats failed payment and unavailable stock as first class outcomes. Correct recovery is part of the product, not an error message added after the successful path. That design decision is what turns the demonstration into a complete order lifecycle study.",
                 "For the confirmed branch, the evidence can be followed from the checkout request to the final screen. The requested quantity is available, a reservation is created, risk rules pass, payment is approved, the quantity is committed, picking becomes current and the remaining delivery stages are scheduled. The same order is saved for profile lookup and conversational support.",
                 "For the declined branch, the evidence follows a different path. The quantity is initially reserved, payment fails, the held units return to availability and neither fulfilment nor delivery is created. The cart remains available for another attempt. For the unavailable branch, reservation fails before risk or payment, which proves that the project avoids charging for a quantity it cannot supply.",

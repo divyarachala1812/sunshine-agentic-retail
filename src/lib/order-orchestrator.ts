@@ -61,7 +61,7 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       message: "The order was stopped before payment because an item is out of stock.",
       inventoryDisposition: "REJECTED",
       inventory: inventoryLines(request.items, "REJECTED"),
-      milestones: stoppedMilestones(createdAt, "OUT_OF_STOCK"),
+      milestones: stoppedMilestones(createdAt, "OUT_OF_STOCK", createdAt),
       trace,
     };
   }
@@ -114,7 +114,7 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
       message: "Payment could not be authorised. No money was charged.",
       inventoryDisposition: "RELEASED",
       inventory: inventoryLines(request.items, "RELEASED"),
-      milestones: stoppedMilestones(createdAt, "PAYMENT_FAILED"),
+      milestones: stoppedMilestones(createdAt, "PAYMENT_FAILED", createdAt),
       trace,
     };
   }
@@ -157,7 +157,7 @@ export function orchestrateOrder(request: OrderRequest): OrderResponse {
     message: "Your order is confirmed and is being prepared for dispatch.",
     inventoryDisposition: "COMMITTED",
     inventory: inventoryLines(request.items, "COMMITTED"),
-    milestones: successfulMilestones(createdAt, "PROCESSING"),
+    milestones: successfulMilestones(createdAt, "PROCESSING", createdAt),
     trace,
   };
 }

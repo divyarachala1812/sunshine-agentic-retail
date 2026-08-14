@@ -31,13 +31,15 @@ const completedThrough: Record<Exclude<DeliveryStatus, "NOT_CREATED">, number> =
   DELIVERED: 7,
 };
 
-function timestamp(createdAt: string, offsetMinutes: number) {
-  return new Date(new Date(createdAt).getTime() + offsetMinutes * 60_000).toISOString();
+function timestamp(createdAt: string, offsetMinutes: number, observedAt: string) {
+  const planned = new Date(createdAt).getTime() + offsetMinutes * 60_000;
+  return new Date(Math.min(planned, new Date(observedAt).getTime())).toISOString();
 }
 
 export function successfulMilestones(
   createdAt: string,
   deliveryStatus: Exclude<DeliveryStatus, "NOT_CREATED">,
+  observedAt = new Date().toISOString(),
 ): OrderMilestone[] {
   const currentIndex = completedThrough[deliveryStatus];
   return templates.map((template, index) => ({
@@ -50,13 +52,14 @@ export function successfulMilestones(
           ? "CURRENT"
           : "UPCOMING",
     message: template.message,
-    occurredAt: index <= currentIndex ? timestamp(createdAt, template.offsetMinutes) : null,
+    occurredAt: index <= currentIndex ? timestamp(createdAt, template.offsetMinutes, observedAt) : null,
   }));
 }
 
 export function stoppedMilestones(
   createdAt: string,
   status: Extract<OrderResponse["status"], "PAYMENT_FAILED" | "OUT_OF_STOCK">,
+  observedAt = new Date().toISOString(),
 ): OrderMilestone[] {
   const stoppedIndex = status === "OUT_OF_STOCK" ? 1 : 2;
   return templates.map((template, index) => {
@@ -66,7 +69,7 @@ export function stoppedMilestones(
         label: template.label,
         state: "COMPLETED",
         message: template.message,
-        occurredAt: timestamp(createdAt, template.offsetMinutes),
+        occurredAt: timestamp(createdAt, template.offsetMinutes, observedAt),
       };
     }
 
@@ -79,7 +82,7 @@ export function stoppedMilestones(
       label: template.label,
       state: "STOPPED",
       message: index === stoppedIndex ? failureMessage : "This stage was not started.",
-      occurredAt: index === stoppedIndex ? timestamp(createdAt, template.offsetMinutes) : null,
+      occurredAt: index === stoppedIndex ? timestamp(createdAt, template.offsetMinutes, observedAt) : null,
     };
   });
 }

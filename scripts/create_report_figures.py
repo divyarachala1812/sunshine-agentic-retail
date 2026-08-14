@@ -5,6 +5,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import ListedColormap
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "reports" / "figures"
@@ -37,7 +38,7 @@ def workflow_matrix() -> None:
     ])
     labels = {0: "Skipped", 1: "Failed", 2: "Completed"}
     figure, axis = plt.subplots(figsize=(9.2, 4.2))
-    axis.imshow(values, cmap="Greys", vmin=0, vmax=2, aspect="auto")
+    axis.imshow(values, cmap=ListedColormap(["#f7f7f7", "#d1d1d1", "#7a7a7a"]), vmin=0, vmax=2, aspect="auto")
     axis.set_xticks(range(len(agents)), agents)
     axis.set_yticks(range(len(scenarios)), scenarios)
     axis.set_title("Agent outcome by checkout branch", fontweight="bold")

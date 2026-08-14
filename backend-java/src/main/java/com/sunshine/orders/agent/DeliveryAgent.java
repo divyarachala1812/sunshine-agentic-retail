@@ -10,7 +10,6 @@ import com.sunshine.orders.model.OrderModels.StepStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +33,7 @@ public class DeliveryAgent {
             MilestoneState state = index < 3 ? MilestoneState.COMPLETED
                     : index == 3 ? MilestoneState.CURRENT
                     : MilestoneState.UPCOMING;
-            Instant occurredAt = index <= 3
-                    ? createdAt.plus(template.offsetMinutes(), ChronoUnit.MINUTES)
-                    : null;
+            Instant occurredAt = index <= 3 ? createdAt : null;
             milestones.add(toMilestone(template, state, template.message(), occurredAt));
         }
         AgentStep step = new AgentStep(
@@ -61,16 +58,14 @@ public class DeliveryAgent {
                         template,
                         MilestoneState.COMPLETED,
                         template.message(),
-                        createdAt.plus(template.offsetMinutes(), ChronoUnit.MINUTES)
+                        createdAt
                 ));
             } else {
                 milestones.add(toMilestone(
                         template,
                         MilestoneState.STOPPED,
                         index == stoppedIndex ? failureMessage : "This stage was not started.",
-                        index == stoppedIndex
-                                ? createdAt.plus(template.offsetMinutes(), ChronoUnit.MINUTES)
-                                : null
+                        index == stoppedIndex ? createdAt : null
                 ));
             }
         }

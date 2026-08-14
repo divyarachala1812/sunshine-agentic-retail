@@ -8,7 +8,11 @@ Author: Divya Rachala
 
 Live application: [Sunshine](https://sunshine-agentic-retail.vercel.app)
 
-![Sunshine storefront](docs/screenshots/01_storefront.jpg)
+<p align="center">
+  <img src="docs/screenshots/01_storefront_overview.jpg" width="880" alt="Sunshine storefront with product catalogue, search and category navigation" />
+</p>
+
+<p align="center"><em>Figure 1. Sunshine storefront and catalogue entry point.</em></p>
 
 ## 1. Project overview
 
@@ -16,7 +20,7 @@ Sunshine provides a complete demonstration shopping journey for customers in Ind
 
 ### 1.1 Problem and purpose
 
-Many student commerce projects stop after product listing, cart and checkout screens. The customer support conversation, stock decision, payment result, delivery update and order history often use separate sample data, so the full journey cannot be followed or verified.
+Many commerce demonstrations stop after product listing, cart and checkout screens. The customer support conversation, stock decision, payment result, delivery update and order history often use separate sample data, so the full journey cannot be followed or verified.
 
 The root cause is disconnected application state. A recommendation may not match the real catalogue, a support response may invent an order update, and a failed checkout may not explain which step stopped the order.
 
@@ -68,7 +72,11 @@ Every visitor can inspect public order examples for the following states.
 
 Orders placed by a visitor are stored in that browser and appear before the public examples.
 
-![Profile and recent orders](docs/screenshots/07_profile_and_recent_orders.jpg)
+<p align="center">
+  <img src="docs/screenshots/07_profile_orders_overview.jpg" width="820" alt="Sunshine profile menu and recent order history" />
+</p>
+
+<p align="center"><em>Figure 2. Profile navigation and saved order states.</em></p>
 
 ### 2.3 Order journey and inventory behaviour
 
@@ -82,7 +90,11 @@ The catalogue contains normal, low stock and unavailable products. Checkout perf
 
 The order page shows all eight customer milestones and a clear before, held and after stock summary for each line item. A confirmed purchase reduces inventory in the current browser. When the final unit is purchased, the product becomes unavailable on the next visit.
 
-![Unavailable product](docs/screenshots/08_unavailable_product.jpg)
+<p align="center">
+  <img src="reports/figures/06_delivery_lifecycle.png" width="820" alt="Eight stage Sunshine order delivery lifecycle" />
+</p>
+
+<p align="center"><em>Figure 3. The delivery contract used by successful orders.</em></p>
 
 ## 3. Application architecture
 
@@ -125,6 +137,18 @@ The order service supports three demonstration results.
 2. A declined payment releases the reserved quantity, creates no shipment and keeps the cart available.
 3. An unavailable item rejects the reservation, stops before payment and records the failed attempt.
 
+### 5.1 Responsibility handoff
+
+| Order phase | Responsible component | Inventory effect | Customer evidence |
+| --- | --- | --- | --- |
+| Request accepted | Order Orchestrator | No quantity change | Order received |
+| Availability check | Catalogue Agent | Available units become reserved | Items reserved |
+| Rule review | Risk Agent | Reservation remains held | Processing continues or stops |
+| Payment | Payment Agent | Reservation is committed or released | Payment confirmed or declined |
+| Preparation | Fulfilment Agent | Committed stock belongs to the order | Picking and packed |
+| Transport | Delivery Agent | No further stock change | Shipped, out for delivery and delivered |
+| Final update | Notification Agent | Final disposition is recorded | Order history and assistant lookup |
+
 ## 6. Product recommendations
 
 The FastAPI service ranks related products from the same category. The scoring method combines product rating and relative price distance.
@@ -132,8 +156,6 @@ The FastAPI service ranks related products from the same category. The scoring m
 ```text
 score = rating multiplied by 2, then reduced by the absolute price difference divided by the reference price
 ```
-
-![Product recommendations](docs/screenshots/02_product_and_recommendations.jpg)
 
 ## 7. Retail analytics
 
