@@ -1,4 +1,4 @@
-# Sunshine
+# Sunshine Retail Platform
 
 Sunshine is an Indian retail application that I built to connect product discovery, conversational shopping, cart management, checkout, order processing, delivery updates and retail analytics in one project.
 
@@ -211,7 +211,7 @@ The automated checks cover pricing, delivery fees, conversational product discov
 
 ## 11. Project report
 
-The detailed report is available at `output/pdf/Sunshine_Project_Report.pdf`. It contains the project requirements, architecture, application flows, API contracts, analytics results and test evidence.
+The [research-style project report](output/pdf/Sunshine_Retail_Platform_Report.pdf) contains an abstract, project overview, architecture, testing method, five explained experiments, one interface test capture, limitations, reproducibility notes and conclusion.
 
 ## 12. Author
 
