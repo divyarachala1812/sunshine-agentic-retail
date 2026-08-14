@@ -243,7 +243,7 @@ cd backend-python
 PYTHONPATH=. pytest -q
 ```
 
-The verified suite contains 23 tests: 15 TypeScript tests, 4 Java tests and 4 Python tests. The checks cover pricing, delivery fees, conversational product discovery, order lookup, stock exhaustion, inventory commit and release, payment failure, the eight stage delivery contract, recommendation ranking and request validation.
+The verified suite contains 26 tests: 18 TypeScript tests, 4 Java tests and 4 Python tests. The checks cover pricing, delivery fees, catalogue search suggestions, conversational product discovery, order lookup, stock exhaustion, inventory commit and release, payment failure, the eight stage delivery contract, recommendation ranking and request validation.
 
 ## 10. Data and limitations
 
