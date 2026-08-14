@@ -66,10 +66,20 @@ h3 { font-size: 1rem; line-height: 1.35; }
 .header-main { min-height: 76px; display: grid; grid-template-columns: auto minmax(280px, 1fr) auto; align-items: center; gap: 32px; }
 .brand { display: flex; align-items: center; gap: 7px; font-size: 1.8rem; font-weight: 700; letter-spacing: -.05em; }
 .brand-sun { color: var(--sun); font-family: Arial, sans-serif; font-size: 1.7rem; }
-.search-form { height: 46px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding-left: 16px; background: white; border: 1px solid #d9d4c8; border-radius: 999px; overflow: hidden; }
+.search-form { height: 46px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding-left: 16px; position: relative; z-index: 90; background: white; border: 1px solid #d9d4c8; border-radius: 999px; }
 .search-form:focus-within { border-color: var(--sun-dark); box-shadow: 0 0 0 3px rgba(244,184,63,.18); }
 .search-form input { min-width: 0; border: 0; outline: 0; background: transparent; }
-.search-form button { height: 100%; border: 0; padding: 0 21px; background: var(--sun); font-weight: 800; cursor: pointer; }
+.search-form > button { height: 100%; border: 0; border-radius: 0 999px 999px 0; padding: 0 21px; background: var(--sun); font-weight: 800; cursor: pointer; }
+.search-suggestions { position: absolute; top: calc(100% + 9px); right: 0; left: 0; max-height: min(430px, 68vh); overflow-y: auto; background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 22px 55px rgba(32,34,29,.2); }
+.search-suggestions button { width: 100%; min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 11px 15px; border: 0; border-bottom: 1px solid var(--line); background: white; color: var(--ink); text-align: left; cursor: pointer; }
+.search-suggestions button:last-child { border-bottom: 0; }
+.search-suggestions button:hover, .search-suggestions button.active, .search-suggestions button[aria-selected="true"] { background: var(--cream); }
+.search-suggestions button > span { min-width: 0; display: grid; gap: 3px; }
+.search-suggestions button strong { overflow: hidden; font-size: .86rem; text-overflow: ellipsis; white-space: nowrap; }
+.search-suggestions button small { color: var(--muted); font-size: .7rem; }
+.search-suggestions button b { flex: 0 0 auto; color: var(--leaf); font-size: .8rem; }
+.search-no-results { display: grid; gap: 4px; padding: 18px; color: var(--ink); }
+.search-no-results span { color: var(--muted); font-size: .75rem; }
 .header-actions { display: flex; align-items: center; gap: 23px; font-size: .88rem; font-weight: 700; }
 .account-link, .cart-link { display: flex; align-items: center; gap: 7px; }
 .cart-link { position: relative; }
@@ -447,7 +457,7 @@ h3 { font-size: 1rem; line-height: 1.35; }
   h1 { font-size: 3rem; }
   .brand { font-size: 1.55rem; }
   .cart-link span { display: none; }
-  .search-form button { padding-inline: 15px; font-size: .78rem; }
+  .search-form > button { padding-inline: 15px; font-size: .78rem; }
   .hero { gap: 34px; }
   .hero-art { min-height: 355px; }
   .fashion-silhouette { transform: translateX(-50%) scale(.86); transform-origin: bottom; }
